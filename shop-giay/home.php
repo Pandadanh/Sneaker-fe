@@ -1,3 +1,24 @@
+
+<?php
+$apiUrl = 'http://localhost:8080/api/controller-page/home';
+
+// Tạo một cURL session
+$curl = curl_init($apiUrl);
+
+// Cấu hình các tùy chọn cho cURL
+curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+
+// Thực hiện request GET và lấy dữ liệu trả về
+$response = curl_exec($curl);
+
+// Đóng cURL session
+curl_close($curl);
+
+// Giải mã dữ liệu JSON trả về thành mảng PHP
+$data = json_decode($response, true);
+// print_r($_SESSION);
+?>
+
 <div id="slider" class="mb-5">
     <div class="container-fluid">
         <div class="row">
@@ -15,9 +36,8 @@
                     </ol>
                     <div class="carousel-inner">
                         <?php
-                        $db = new Helper();
-                        $statement = "SELECT * FROM tbl_sliders";
-                        $result = $db->fetchAll($statement);
+                       
+                       $result = $data["list_data"]["list_silders"];
                         foreach ($result as $row) {
                         ?>
                             <div class="carousel-item active" data-inteval="4800">
@@ -35,31 +55,6 @@
                         <?php
                         }
                         ?>
-
-                        <!-- <div class="carousel-item active" data-inteval="4800">
-                            <img src="assets/images/slideshow_1.webp" alt="" class="d-block w-100" />
-                        </div>
-                        <div class="carousel-item" data-inteval="4800">
-                            <img src="assets/images/slideshow_2.webp" alt="" class="d-block w-100" />
-                        </div>
-                        <div class="carousel-item" data-inteval="4800">
-                            <img src="assets/images/slideshow_3.webp" alt="" class="d-block w-100" />
-                        </div>
-                        <div class="carousel-item" data-inteval="4800">
-                            <img src="assets/images/slideshow_4.webp" alt="" class="d-block w-100" />
-                        </div>
-                        <div class="carousel-item" data-inteval="4800">
-                            <img src="assets/images/slideshow_5.webp" alt="" class="d-block w-100" />
-                        </div>
-                        <div class="carousel-item" data-inteval="4800">
-                            <img src="assets/images/slideshow_6.webp" alt="" class="d-block w-100" />
-                        </div>
-                        <div class="carousel-item" data-inteval="4800">
-                            <img src="assets/images/slideshow_7.webp" alt="" class="d-block w-100" />
-                        </div>
-                        <div class="carousel-item" data-inteval="4800">
-                            <img src="assets/images/slideshow_9.webp" alt="" class="d-block w-100" />
-                        </div> -->
                     </div>
                     <!-- end carousel-inner -->
                     <a href="#home-slide" class="carousel-control-prev" data-slide="prev">
@@ -80,29 +75,24 @@
         <div class="container">
             <div class="row box-head">
                 <div class="col-md-12 text-center">
-                    <h1 class="text-uppercase text-center mb-5">Bộ sưu tập mới</h1>
-                    <!-- <div class="line"></div> -->
-                    <!-- <div class="embed-responsive embed-responsive-16by9 mb-4">
-                        <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/eGUor824a74"></iframe>
-                    </div> -->
+                  
                 </div>
             </div>
         </div>
         <div class="container">
             <div class="row box-body list-new-collection mb-5">
                 <?php
-                $db = new Helper();
-                $statement = "SELECT * FROM tbl_product limit 4";
-                $result = $db->fetchAll($statement);
+                
+                $result = $data["list_data"]["list_product_top4"];
                 foreach ($result as $row) {
                 ?>
                     <div class="col-md-3 col-sm-6 col-12 mb-4">
-                        <a href="chitietsp.php?id=<?php echo $row['id_pro']; ?>" class="img-new-collection img-box-body">
-                            <img src="../uploads/<?php echo $row['hinhanh'] ?>" alt="" />
+                        <a href="chitietsp.php?id=<?php echo $row['idPro']; ?>" class="img-new-collection img-box-body">
+                            <img src="../uploads/<?php echo $row['hinhAnh'] ?>" alt="" />
                         </a>
                         <span class="tag-sale">Hàng mới</span>
-                        <a href="chitietsp.php?id=<?php echo $row['id_pro']; ?>" class="name-new-collection name-box-body text-dark text-justify"><?php echo $row['ten_pro'] ?></a>
-                        <span class="price-box-body d-block text-center text-danger"><?php echo money($row['giamoi']) ?></span>
+                        <a href="chitietsp.php?id=<?php echo $row['idPro']; ?>" class="name-new-collection name-box-body text-dark text-justify"><?php echo $row['tenPro'] ?></a>
+                        <span class="price-box-body d-block text-center text-danger"><?php echo money($row['giaMoi']) ?></span>
                     </div>
                 <?php
                 }
@@ -121,17 +111,17 @@
         <div class="container pb-5 mb-5">
             <div class="row box-body">
                 <div class="col-md-4 col-sm-6 mb-4">
-                    <a href="" class="img-box-body">
+                    <a href="index.php?page=product&danhmuc=1" class="img-box-body">
                         <img src="assets/images/newcoll_1_img_large.jpg" alt="" />
                     </a>
                 </div>
                 <div class="col-md-4 col-sm-6 mb-4">
-                    <a href="" class="img-box-body">
+                    <a href="index.php?page=product&danhmuc=2" class="img-box-body">
                         <img src="assets/images/newcoll_2_img_large.jpg" alt="" />
                     </a>
                 </div>
                 <div class="col-md-4 col-sm-6 mb-4">
-                    <a href="" class="img-box-body">
+                    <a href="index.php?page=product" class="img-box-body">
                         <img src="assets/images/newcoll_4_img_large.jpg" alt="" />
                     </a>
                 </div>
@@ -149,56 +139,56 @@
         <div class="container">
             <div class="row box-body pb-5 mb-5">
                 <div class="col-md-4 col-sm-6 mb-4">
-                    <a href="" class="img-box-body">
+                    <a href="index.php?page=product&nhanhieu=1" class="img-box-body">
                         <img src="assets/images/check_use_icon_1_large.webp" alt="" />
                     </a>
                     <a href="" class="brand-name">Giày Nike</a>
                 </div>
                 <div class="col-md-4 col-sm-6 mb-4">
-                    <a href="" class="img-box-body">
+                    <a href="index.php?page=product&nhanhieu=2" class="img-box-body">
                         <img src="assets/images/check_use_icon_2_large.jpg" alt="" />
                     </a>
                     <a href="" class="brand-name">Giày Adidas</a>
                 </div>
 
                 <div class="col-md-4 col-sm-6 mb-4">
-                    <a href="" class="img-box-body">
+                    <a href="index.php?page=product&nhanhieu=4" class="img-box-body">
                         <img src="assets/images/check_use_icon_3_large.webp" alt="" />
                     </a>
                     <a href="" class="brand-name">Giày Mizuno</a>
                 </div>
                 <div class="col-md-4 col-sm-6 mb-4">
-                    <a href="" class="img-box-body">
+                    <a href="index.php?page=product&nhanhieu=7" class="img-box-body">
                         <img src="assets/images/check_use_icon_4_large.webp" alt="" />
                     </a>
                     <a href="" class="brand-name">Giày Puma</a>
                 </div>
                 <div class="col-md-4 col-sm-6 mb-4">
-                    <a href="" class="img-box-body">
+                    <a href="index.php?page=product&nhanhieu=8" class="img-box-body">
                         <img src="assets/images/check_use_icon_7_large.jpg" alt="" />
                     </a>
                     <a href="" class="brand-name">Giày Kamito</a>
                 </div>
                 <div class="col-md-4 col-sm-6 mb-4">
-                    <a href="" class="img-box-body">
+                    <a href="index.php?page=product&nhanhieu=5" class="img-box-body">
                         <img src="assets/images/check_use_icon_12_large.jpg" alt="" />
                     </a>
                     <a href="" class="brand-name">Giày Asics</a>
                 </div>
                 <div class="col-md-4 col-sm-6 mb-4">
-                    <a href="" class="img-box-body">
+                    <a href="index.php?page=product" class="img-box-body">
                         <img src="assets/images/check_use_icon_8_large.jpg" alt="" />
                     </a>
                     <a href="" class="brand-name">Giày Athleta</a>
                 </div>
                 <div class="col-md-4 col-sm-6 mb-4">
-                    <a href="" class="img-box-body">
+                    <a href="index.php?page=product&nhanhieu=10" class="img-box-body">
                         <img src="assets/images/check_use_icon_5_large.webp" alt="" />
                     </a>
                     <a href="" class="brand-name">Giày Loma</a>
                 </div>
                 <div class="col-md-4 col-sm-6 mb-4">
-                    <a href="" class="img-box-body">
+                    <a href="index.php?page=product&nhanhieu=3" class="img-box-body">
                         <img src="assets/images/check_use_icon_6_large.jpg" alt="" />
                     </a>
                     <a href="" class="brand-name">Giày Desporte</a>
@@ -222,17 +212,17 @@
                             <div class="container">
                                 <div class="row box-body">
                                     <?php
-                                    $db = new Helper();
-                                    $statement = "SELECT * FROM tbl_product where id_dm=1 limit 4";
-                                    $result = $db->fetchAll($statement);
+                                  
+
+                                    $result = $data["list_data"]["list_product_iddm1"];
                                     foreach ($result as $row) {
                                     ?>
                                         <div class="col-md-3 col-sm-6 mb-4">
-                                            <a href="chitietsp.php?id=<?php echo $row['id_pro']; ?>" class="img-box-body">
-                                                <img src="../uploads/<?php echo $row['hinhanh'] ?>" alt="" />
+                                            <a href="chitietsp.php?id=<?php echo $row['idPro']; ?>" class="img-box-body">
+                                                <img src="../uploads/<?php echo $row['hinhAnh'] ?>" alt="" />
                                             </a>
-                                            <a href="chitietsp.php?id=<?php echo $row['id_pro']; ?>" class="name-type name-box-body text-dark text-justify"><?php echo $row['ten_pro'] ?></a>
-                                            <span class="price-box-body d-block text-center text-danger"><?php echo money($row['giamoi']) ?></span>
+                                            <a href="chitietsp.php?id=<?php echo $row['idPro']; ?>" class="name-type name-box-body text-dark text-justify"><?php echo $row['tenPro'] ?></a>
+                                            <span class="price-box-body d-block text-center text-danger"><?php echo money($row['giaMoi']) ?></span>
                                         </div>
                                     <?php
                                     }
@@ -244,17 +234,15 @@
                             <div class="container">
                                 <div class="row box-body">
                                 <?php
-                                    $db = new Helper();
-                                    $statement = "SELECT * FROM tbl_product where id_dm=2 limit 4";
-                                    $result = $db->fetchAll($statement);
+                                    $result = $data["list_data"]["list_product_iddm2"];
                                     foreach ($result as $row) {
                                     ?>
                                         <div class="col-md-3 col-sm-6 mb-4">
-                                            <a href="chitietsp.php?id=<?php echo $row['id_pro']; ?>" class="img-box-body" style="height: 300px;">
-                                                <img src="../uploads/<?php echo $row['hinhanh'] ?>" alt="" />
+                                            <a href="chitietsp.php?id=<?php echo $row['idPro']; ?>" class="img-box-body" style="height: 300px;">
+                                                <img src="../uploads/<?php echo $row['hinhAnh'] ?>" alt="" />
                                             </a>
-                                            <a href="chitietsp.php?id=<?php echo $row['id_pro']; ?>" class="name-type name-box-body text-dark text-justify"><?php echo $row['ten_pro'] ?></a>
-                                            <span class="price-box-body d-block text-center text-danger"><?php echo money($row['giamoi']) ?></span>
+                                            <a href="chitietsp.php?id=<?php echo $row['idPro']; ?>" class="name-type name-box-body text-dark text-justify"><?php echo $row['tenPro'] ?></a>
+                                            <span class="price-box-body d-block text-center text-danger"><?php echo money($row['giaMoi']) ?></span>
                                         </div>
 
                                     <?php

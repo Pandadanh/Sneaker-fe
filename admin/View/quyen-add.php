@@ -1,32 +1,30 @@
-
 <?php
-if(isset($_POST['form1'])) {
+if (isset($_POST['form1'])) {
 	$valid = 1;
 
-    if(empty($_POST['nhomquyen'])) {
-        $valid = 0;
-        $error_message .= "Tên nhóm quyền không được trống<br>";
-    } else {
-    	// Duplicate Category checking
-    	$statement = $pdo->prepare("SELECT * FROM tbl_nhomquyen where nhomquyen=?");
-		$para=[$_POST['nhomquyen']];
-    	$statement->execute($para);
-    	$total = $statement->rowCount();
-    	if($total)
-    	{
-    		$valid = 0;
-        	$error_message .= "Nhóm quyền đã tồn tại<br>";
-    	}
-    }
+	if (empty($_POST['nhomquyen'])) {
+		$valid = 0;
+		$error_message .= "Tên nhóm quyền không được trống<br>";
+	} else {
+		$data = array(
+			'new' => $_POST['nhomquyen']
+		);
+		$apiUrl = 'http://localhost:8080/api-admin/controller-user-admin/add';
+		$ch = curl_init($apiUrl);
+		curl_setopt($ch, CURLOPT_POST, 1);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+		$response = curl_exec($ch);
+		curl_close($ch);
+		$responseData = json_decode($response, true);
 
-    if($valid == 1) {
+		if ($responseData === null) {
 
-		// Saving data into the main table tbl_nhomquyen
-		$statement = $pdo->prepare("INSERT INTO tbl_nhomquyen (nhomquyen,daxoa) VALUES (?,0)");
-		$statement->execute(array($_POST['nhomquyen']));
-	
-    	$success_message = 'Thêm nhóm quyền thành công!!.';
-    }
+			$error_message .= "Error<br>";
+		} else {
+			$success_message = 'Thêm Nhóm quyền thành công.';
+		}
+	}
 }
 ?>
 
@@ -45,20 +43,20 @@ if(isset($_POST['form1'])) {
 	<div class="row">
 		<div class="col-md-12">
 
-			<?php if($error_message): ?>
-			<div class="callout callout-danger">
-			
-			<p>
-			<?php echo $error_message; ?>
-			</p>
-			</div>
+			<?php if ($error_message) : ?>
+				<div class="callout callout-danger">
+
+					<p>
+						<?php echo $error_message; ?>
+					</p>
+				</div>
 			<?php endif; ?>
 
-			<?php if($success_message): ?>
-			<div class="callout callout-success">
-			
-			<p><?php echo $success_message; ?></p>
-			</div>
+			<?php if ($success_message) : ?>
+				<div class="callout callout-success">
+
+					<p><?php echo $success_message; ?></p>
+				</div>
 			<?php endif; ?>
 
 			<form class="form-horizontal" action="" method="post">

@@ -71,7 +71,7 @@
 				document.getElementById("trang").innerHTML = inra[1];
 			}
 		}
-		xmlhttp.open("GET", "../Model/quyen-pt-tk.php?p=" + p + "&search=" + search, true);
+		xmlhttp.open("GET", "../Controllers/controller_quyen/controller_quyen-pt-tk.php?p=" + p + "&search=" + search, true);
 		xmlhttp.send();
 	}
 	window.onload = show(1);

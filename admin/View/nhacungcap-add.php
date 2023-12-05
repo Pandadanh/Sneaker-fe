@@ -1,33 +1,40 @@
 
+
 <?php
+include('../Control/inc/config.php');
 if(isset($_POST['form1'])) {
-	$valid = 1;
 
     if(empty($_POST['ten_ncc'])) {
         $valid = 0;
-        $error_message .= "Tên nhà cung cấp không để trống<br>";
+        $error_message .= "Nhà cung cấp không được để trống<br>";
     } else {
-    	// Duplicate Category checking
-    	$statement = "SELECT * FROM tbl_nhacungcap WHERE ten_ncc=?";
-		$para=[$_POST['ten_ncc']];
-		$db = new Helper();
-    	$total = $db->rowCount($statement,$para);
-    	if($total)
-    	{
-    		$valid = 0;
-        	$error_message .= "Tên nhà cung cấp đã tồn tại<br>";
-    	}
-    }
 
-    if($valid == 1) {
-		$statement = "INSERT INTO tbl_nhacungcap (ten_ncc,daxoa) VALUES (?,0)";
-		$para=[$_POST['ten_ncc']];
-		$db = new Helper();
-		$db->execute($statement,$para);
-    	$success_message = 'Thêm nhà cung cấp thành công.';
-    }
+
+		$data = array(
+			'nhanhieunew' => $_POST['ten_ncc']
+		);
+	
+		$apiUrl = 'http://localhost:8080/api-admin/controller-nhacungcap/add';
+		$ch = curl_init($apiUrl);
+		curl_setopt($ch, CURLOPT_POST, 1);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+		$response = curl_exec($ch);
+		curl_close($ch);
+		$responseData = json_decode($response, true);
+	
+		if ($responseData === null) {
+	
+			$error_message .= "Error<br>";
+		} else {
+			$success_message = 'Thêm nhà cung cấp thành công.';
+		}
+
+
+	}
 }
 ?>
+
 
 <section class="content-header">
 	<div class="content-header-left">

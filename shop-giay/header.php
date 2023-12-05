@@ -1,4 +1,5 @@
 <?php
+session_start();
 if (!function_exists('money')) {
     function money($number, $suffix = 'đ')
     {
@@ -7,10 +8,19 @@ if (!function_exists('money')) {
         }
     }
 }
-include('./Helper.php');
-$db = new Helper();
-$statement = "SELECT * FROM tbl_setting where id=1";
-$result = $db->fetchOne($statement);
+
+
+
+$apiUrl = 'http://localhost:8080/api/controller-page/header';
+$curl = curl_init($apiUrl);
+curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+$response = curl_exec($curl);
+curl_close($curl);
+
+$data = json_decode($response, true);
+
+$result = $data['list_data']['list_setting'][1];
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -41,6 +51,38 @@ $result = $db->fetchOne($statement);
             border: 1px solid gray;
             z-index: 1;
         }
+
+        #header {
+            background-color: #E1E3E8 !important;
+        }
+
+        .row {
+            background-color: #E1E3E8 !important;
+
+        }
+
+        #top_header {
+            width: 100%;
+            height: 45px;
+            background-color: #424146;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .text-top-header {
+            color: #ffffff;
+            border-radius: 3px 3px 0 0;
+            font-family: Roboto Condensed;
+            font-size: 15px;
+            font-weight: 15%;
+            font-size: 15px;
+            font-weight: inherit;
+
+            /* Đặt độ đậm cho chữ */
+            cursor: default;
+
+        }
     </style>
     <script defer>
         function show() {
@@ -55,7 +97,7 @@ $result = $db->fetchOne($statement);
                     document.getElementById("search-hints").innerHTML = this.responseText;
                 }
             }
-            xmlhttp.open("GET", "HienThiGoiY.php?search=" + search, true);
+            xmlhttp.open("GET", "./controllers/controller_goiy.php?search=" + search, true);
             xmlhttp.send();
         }
         if (window.history.replaceState) {
@@ -64,37 +106,67 @@ $result = $db->fetchOne($statement);
     </script>
     <script>
         $(document).ready(function() {
-            $('#search').on('blur', function() {
-                document.getElementById("search-hints").innerHTML = "<div></div>";
-            });
+            $(window).scroll(function() {
+                $("#search-hints").html("<div></div>");
+            })
+        });
+        window.addEventListener("click", function(event) {
+            var searchHints = document.getElementById("search-hints");
+            // Kiểm tra nếu phần tử bấm vào không thuộc search-hints
+            if (event.target !== searchHints && !searchHints.contains(event.target)) {
+                // Tắt search-hints bằng cách gán nội dung thành chuỗi rỗng
+                searchHints.innerHTML = "";
+            }
         });
     </script>
 </head>
 
 <body>
     <div id="wrapper">
+
+        <div id="top_header">
+            <div class="text-top-header">Thanh Hùng Futsal - Giày Đá Bóng Chính Hãng - 2013</div>
+        </div>
         <div id="header">
             <div class="container-fluid pt-3 position-relative">
                 <div class="row d-flex justify-content-between">
                     <div class="logo col-md-3">
-                        <a href="index.html" class="d-block logo-icon">
+                        <a href="index.php?page=home" class="d-block logo-icon">
                             <img src="../uploads/<?php echo $result['logo'] ?>" alt="" />
                         </a>
                     </div>
                     <?php
-                    session_start();
+                 
                     if (isset($_SESSION['user1'])) {
-                        $ten_user = $_SESSION['user1']['ten_user'];
-                        $avatar = $_SESSION['user1']['avatar'];
+
+                        $ten_user = isset($_SESSION['user1']['data']['tenUser']);
+
+
+
+                        if (isset($_SESSION['user1']['data']['avatar']) && $_SESSION['user1']['data']['avatar'] != '') {
+                            $avatar = $_SESSION['user1']['data']['avatar'];
+                        } else {
+                            $_SESSION['user1']['data']['avatar'] = "user-5.jpg";
+                            $avatar = $_SESSION['user1']['data']['avatar'];
+                        }
                     } else {
                         $ten_user = "";
                         $avatar = "";
                     }
                     ?>
-                    <div class="mr-3 mt-4" id="ttdn">
-                        <img src="../uploads/<?php echo $avatar ?>" alt="" style="width:80px; height: 80px; border-radius: 100%;">
-                        <?php echo $ten_user ?>
+
+                    <div class="mr-3 " id="ttdn">
+                        <?php
+                        if ($avatar != "") {
+                        ?>
+                            <img src="../uploads/<?php echo $avatar; ?>" alt="" style="width:60px; height: 60px; border-radius: 100%;">
+                            <!-- <?php echo $ten_user; ?> -->
+                        <?php
+                        }
+                        ?>
                     </div>
+
+
 
                     <form id="form-search-responsive">
                         <input type="text" name="query" id="search-input" onkeypress="show()" onchange="show()" placeholder="Bạn muốn tìm gì?" />
@@ -118,9 +190,10 @@ $result = $db->fetchOne($statement);
                                     <a href="index.php?page=product">Thương hiệu <i class="fa-solid fa-sort-down"></i></a>
                                     <ul class="sub-menu">
                                         <?php
-                                        $db = new Helper();
-                                        $stmt = "select * from tbl_nhanhieu";
-                                        $result = $db->fetchAll($stmt);
+
+
+                                        $result = $data['list_data']['list_nhanhieu'];
+
                                         foreach ($result as $row) {
                                         ?>
                                             <li>
@@ -132,21 +205,19 @@ $result = $db->fetchOne($statement);
                                     </ul>
                                 </li>
                                 <?php
-                                $db = new Helper();
-                                $stmt0 = "select * from tbl_danhmuc";
-                                $result0 = $db->fetchAll($stmt0);
+
+                                $result0 = $data['list_data']['list_danhmuc'];
                                 foreach ($result0 as $danhmuc) {
                                 ?>
                                     <li>
-                                        <a href=""><?php echo $danhmuc['danhmuc'] ?> <i class="fa-solid fa-sort-down"></i></a>
+                                        <a href=""><?php echo $danhmuc['danhMuc'] ?> <i class="fa-solid fa-sort-down"></i></a>
                                         <ul class="sub-menu text-dark">
                                             <?php
-                                            $db = new Helper();
-                                            $stmt = "select * from tbl_nhanhieu";
-                                            $result = $db->fetchAll($stmt);
+
+                                            $result = $data['list_data']['list_nhanhieu'];
                                             foreach ($result as $nhanhieu) {
                                             ?>
-                                                <li><a href="index.php?page=product&nhanhieu=<?php echo $nhanhieu['id_nh'] ?>&danhmuc=<?php echo $danhmuc['id_dm'] ?>"><?php echo $nhanhieu['nhanhieu'] ?> </a></li>
+                                                <li><a href="index.php?page=product&nhanhieu=<?php echo $nhanhieu['id_nh'] ?>&danhmuc=<?php echo $danhmuc['idDm'] ?>"><?php echo $nhanhieu['nhanhieu'] ?> </a></li>
                                             <?php
                                             }
                                             ?>
@@ -242,7 +313,7 @@ $result = $db->fetchOne($statement);
                     </div>
                     <div class="col-md-5 col-sm-3 position-absolute ">
                         <form action="index.php" id="form-search" style="right:-105%; ">
-                        <input type="text" name="page" hidden value="product"/>
+                            <input type="text" name="page" hidden value="product" />
                             <input type="text" name="search" id="search" onkeypress="show()" onkeydown="show()" placeholder="Bạn muốn tìm gì?" class="form-control" />
                             <button class="btn btn-dark ml-2">
                                 <i class="fa-solid fa-magnifying-glass"></i>
@@ -256,12 +327,13 @@ $result = $db->fetchOne($statement);
                         <ul class="list-icon">
                             <li>
                                 <a href="index.php?page=giohang"><i class="fa-solid fa-cart-shopping"></i></a>
-                                <span style="position: absolute; top: 0px; right:-5px; color:#e74c3c; border-radius: 100%; background: white; width: 20px; height: 20px; display:block; text-align:center; line-height: 20px; font-weight: bold;">
+                                <span id="soluongGH" style="position: absolute; top: 0px; right:-5px; color:#e74c3c; border-radius: 100%; background: white; width: 20px; height: 20px; display:block; text-align:center; line-height: 20px; font-weight: bold;">
                                     <?php
                                     $num_products = 0;
                                     if (isset($_SESSION['cart'])) {
                                         foreach ($_SESSION['cart'] as $product) {
-                                            $num_products += $product['soluong'];
+                                            // $num_products += $product['soluong'];
+                                            $num_products += 1;
                                         }
                                     }
                                     echo $num_products;
@@ -276,7 +348,7 @@ $result = $db->fetchOne($statement);
                                 <ul class="sub-login">
                                     <?php
                                     if (isset($_SESSION['user1'])) {
-                                        echo '<li><a href="index.php?page=login"">Đăng Xuất</a></li>';
+                                        echo '<li><a href="index.php?page=out"">Đăng Xuất</a></li>';
                                         echo '<li><a href="index.php?page=Profile-edit"">Chỉnh Sửa</a></li>';
                                     } else {
                                         echo '<li><a href="index.php?page=sign-up">Đăng ký</a></li>
@@ -290,7 +362,7 @@ $result = $db->fetchOne($statement);
                                 <ul class="sub-login">
                                     <?php
                                     if (isset($_SESSION['user1'])) {
-                                        echo '<li><a href="index.php?page=login" ">Đăng Xuất</a></li>';
+                                        echo '<li><a href="index.php?page=out">Đăng Xuất</a></li>';
                                         echo '<li><a href="index.php?page=Profile-edit"">Chỉnh Sửa</a></li>';
                                     } else {
                                         echo '<li><a href="index.php?page=sign-up">Đăng ký</a></li>

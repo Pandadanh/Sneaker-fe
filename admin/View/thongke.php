@@ -10,15 +10,39 @@
             <div class="box box-info" style="width: 1550px">
                 <div class="box-body">
                     <div class="wrap col-md-12">
+
+
+                        <?php
+
+                        $apiUrl = 'http://localhost:8080/api-admin/controller-product/show-dm-nh';
+                        $ch = curl_init($apiUrl);
+                        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+                        $response = curl_exec($ch);
+
+                        curl_close($ch);
+
+                        if ($response === false) {
+                            die('CURL Error: ' . curl_error($ch));
+                        }
+                        if ($response) {
+                            $data = json_decode($response, true);
+
+                            if ($data === null) {
+                                die('Invalid JSON data');
+                            }
+                        }
+                        ?>
+
+
                         <form>
                             <div class="col-md-12" style="margin-top: 10px; margin-bottom: 10px; width: 1530px;">
                                 Nhãn hiệu
                                 <select name="nhanhieu" id="nhanhieu" style="height: 25px; margin-right: 50px;">
                                     <option value="">Tất cả</option>
                                     <?php
-                                    $db = new Helper();
-                                    $stmt = "select * from tbl_nhanhieu";
-                                    $result = $db->fetchAll($stmt);
+
+                                    $result = $data['list_data']['list_nhanhieu'];
                                     foreach ($result as $row) {
                                     ?>
                                         <option value="<?php echo $row['id_nh'] ?>"><?php echo $row['nhanhieu'] ?></option>
@@ -30,19 +54,18 @@
                                 <select name="nhanhieu" id="danhmuc" style="height: 25px; margin-right: 50px;">
                                     <option value="">Tất cả</option>
                                     <?php
-                                    $db = new Helper();
-                                    $stmt = "select * from tbl_danhmuc";
-                                    $result = $db->fetchAll($stmt);
+
+                                    $result = $data['list_data']['list_danhmuc'];
                                     foreach ($result as $row) {
                                     ?>
-                                        <option value="<?php echo $row['id_dm'] ?>"><?php echo $row['danhmuc'] ?></option>
+                                        <option value="<?php echo $row['idDm'] ?>"><?php echo $row['danhMuc'] ?></option>
                                     <?php
                                     }
                                     ?>
                                 </select>
                                 Từ ngày <input type="date" name="" id="ngaymin" value="2020-01-01">
                                 đến ngày <input type="date" name="" id="ngaymax" value="<?php echo date('Y-m-d'); ?>" max="<?php echo date('Y-m-d'); ?>" style="margin-right: 50px;">
-                                Số dòng / Trang <input type="number" id="sodong" min="1" max="1000" value="5" style="height: 25px; margin-right: 50px;">
+                                Số dòng / Trang <input type="number" id="sodong" min="1" value="5" style="height: 25px; width: 50px; margin-right: 50px;">
                                 Top<input type="number" id="topsp" style="width: 50px; margin-left:10px;margin-right: 10px;"> sản phẩm bán chạy
                                 <input type="button" value="Tìm" class="" onclick="show(1)" style="margin-left: 15px;">
                             </div>
@@ -79,11 +102,21 @@
 <script defer>
     function show(p) {
         var sodong = document.getElementById("sodong").value;
+        if (sodong < 1) {
+            alert("Số dòng không hợp lệ");
+            document.getElementById("sodong").value = 5;
+            return;
+        }
         var id_nh = document.getElementById("nhanhieu").value;
         var id_dm = document.getElementById("danhmuc").value;
         var ngaymin = document.getElementById("ngaymin").value;
         var ngaymax = document.getElementById("ngaymax").value;
         var topsp = document.getElementById("topsp").value;
+        if (topsp < 0) {
+            alert("Số dòng không hợp lệ");
+            document.getElementById("topsp").value = 5;
+            return;
+        }
         var xmlhttp = new XMLHttpRequest();
         xmlhttp.onreadystatechange = function() {
             if (this.readyState == 4 && this.status == 200) {
@@ -92,7 +125,7 @@
                 document.getElementById("trang").innerHTML = inra[1];
             }
         }
-        xmlhttp.open("GET", "../Model/thongke-pt-tk.php?p=" + p + "&id_nh=" + id_nh + "&id_dm=" + id_dm + "&ngaymin=" + ngaymin + "&ngaymax=" + ngaymax + "&topsp=" + topsp + "&sodong=" + sodong, true);
+        xmlhttp.open("GET", "../Controllers/controller_thongke/controller_thongke-pt-tk.php?p=" + p + "&id_nh=" + id_nh + "&id_dm=" + id_dm + "&ngaymin=" + ngaymin + "&ngaymax=" + ngaymax + "&topsp=" + topsp + "&sodong=" + sodong, true);
         xmlhttp.send();
     }
     window.onload = show(1);

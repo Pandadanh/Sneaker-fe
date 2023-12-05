@@ -24,6 +24,9 @@ if (isset($_GET['page'])) {
         case "active_account":
             require_once("active_account.php");
             break;
+        case "out":
+            require_once("out.php");
+            break;
         case "giohang":
             require_once("giohang.php");
             break;

@@ -1,32 +1,33 @@
 
 <?php
-include "../Database/Helper.php";
+
 if(isset($_POST['form1'])) {
-	$valid = 1;
-
-    if(empty($_POST['size_name'])) {
+	if(empty($_POST['size_name'])) {
         $valid = 0;
-        $error_message .= "Size Name can not be empty<br>";
+        $error_message .= "Size không được để trống<br>";
     } else {
-    	// Duplicate Category checking
-    	$statement = "SELECT * FROM tbl_size WHERE size=?";
-		$para=[$_POST['size_name']];
-		$db = new Helper();
-    	$total = $db->rowCount($statement,$para);
-    	if($total)
-    	{
-    		$valid = 0;
-        	$error_message .= "Size Name already exists<br>";
-    	}
-    }
+		$data = array(
+			'sizenew' => $_POST['size_name']
+		);
 
-    if($valid == 1) {
-		$statement = "INSERT INTO tbl_size (size,daxoa) VALUES (?,1)";
-		$para=[$_POST['size_name']];
-		$db = new Helper();
-		$db->execute($statement,$para);
-    	$success_message = 'Size is added successfully.';
-    }
+		$apiUrl = 'http://localhost:8080/api-admin/controller-size/add';
+		$ch = curl_init($apiUrl);
+		curl_setopt($ch, CURLOPT_POST, 1);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+		$response = curl_exec($ch);
+		curl_close($ch);
+		$responseData = json_decode($response, true);
+	
+		if ($responseData === null) {
+	
+			$error_message .= "Error<br>";
+		} else {
+			$success_message = 'Thêm Size thành công.';
+		}
+
+
+	}
 }
 ?>
 

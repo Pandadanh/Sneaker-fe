@@ -7,7 +7,7 @@
 	}
 </style>
 <?php
-include("../Model/inforindex.php");
+include("../Controllers/controller_dashboard.php");
 ?>
 
 <section class="content">

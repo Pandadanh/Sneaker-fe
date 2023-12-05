@@ -1,5 +1,5 @@
 <?php
-include("../Database/Helper.php");
+
 if (isset($_POST['form1'])) {
 	$valid = 1;
 
@@ -7,50 +7,38 @@ if (isset($_POST['form1'])) {
 		$valid = 0;
 		$error_message .= "Size can not be empty<br>";
 	} else {
-		$db = new Helper();
-		$statement = "SELECT * FROM tbl_size WHERE id_size=?";
-		$para = [$_REQUEST['id']];
-		$result = $db->fetchAll($statement, $para);
-		foreach ($result as $row) {
-			$current_size = $row['size'];
-		}
-		$db = new Helper();
-		$statement = "SELECT * FROM tbl_size WHERE size=? ";
-		$para = [$_POST['size']];
-		$total = $db->rowCount($statement, $para);
-		if ($total) {
+		if (empty($_POST['size'])) {
 			$valid = 0;
-			$error_message .= 'Size name already exists<br>';
+			$error_message .= "Tên Size không được để trống<br>";
+		} else {
+
+
+
+			$data = array(
+				'sizenew' => $_POST['size'],
+				'id' => $_REQUEST['id']
+			);
+
+			$apiUrl = 'http://localhost:8080/api-admin/controller-size/edit';
+			$ch = curl_init($apiUrl);
+			curl_setopt($ch, CURLOPT_POST, 1);
+			curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+			curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+			$response = curl_exec($ch);
+			curl_close($ch);
+			$responseData = json_decode($response, true);
+
+			if ($responseData === null) {
+
+				$error_message .= "Error<br>";
+			} else {
+				$success_message = 'Thay đổi Size thành công.';
+			}
 		}
 	}
-
-	if ($valid == 1) {
-		// updating into the database
-		$statement = $pdo->prepare("UPDATE tbl_size SET size=? WHERE id_size=?");
-		$statement->execute(array($_POST['size'], $_REQUEST['id']));
-
-		$success_message = 'Size is updated successfully.';
-	}
 }
 ?>
 
-<?php
-if (!isset($_REQUEST['id'])) {
-	header('location: logout.php');
-	exit;
-} else {
-	// Check the id is valid or not
-	$statement = "SELECT * FROM tbl_size WHERE id_size=?";
-	$db = new Helper();
-	$para = [$_REQUEST['id']];
-	$total = $db->rowCount($statement, $para);
-	$result = $db->fetchAll($statement, $para);
-	if ($total == 0) {
-		header('location: logout.php');
-		exit;
-	}
-}
-?>
 
 <section class="content-header">
 	<div class="content-header-left">
@@ -63,9 +51,28 @@ if (!isset($_REQUEST['id'])) {
 
 
 <?php
-foreach ($result as $row) {
-	$size = $row['size'];
+
+
+$apiUrl = 'http://localhost:8080/api-admin/controller-size/show-id';
+$data = array(
+	'id' => $_REQUEST['id']
+);
+$ch = curl_init($apiUrl);
+curl_setopt($ch, CURLOPT_POST, 1);
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data)); 
+curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+$response = curl_exec($ch);
+curl_close($ch);
+$responseData = json_decode($response, true);
+
+if ($responseData === null) {
+    die('Invalid JSON data');
 }
+
+// print_r( $responseData);
+	$size = $responseData['data']['size'];
+
 ?>
 
 <section class="content">

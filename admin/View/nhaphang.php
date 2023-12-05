@@ -18,16 +18,36 @@ if (isset($_POST['thempn'])) {
         $array = array();
     }
     foreach ($_REQUEST['size'] as $size => $values) {
-        if ($gianhap == 0) {
-            echo "<script type='text/javascript'>alert('Bạn chưa nhập giá');</script>";
+        if ($gianhap < 0 && $gianhap > 10000000000) {
+            echo "<script type='text/javascript'>alert('Giá chưa đúng');</script>";
             break;
         }
         foreach ($values as $value) {
-            $db = new Helper();
-            $stmt = "select id_size from tbl_size where size =? ";
-            $para = [$size];
-            $result = $db->fetchOne($stmt, $para);
-            $id_size = $result['id_size'];
+
+            // echo($size);
+            $apiUrl = 'http://localhost:8080/api-admin/controller-chitietpn/show-size?size=' .  $size;;
+            $ch = curl_init($apiUrl);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+            $response = curl_exec($ch);
+
+            curl_close($ch);
+
+            if ($response === false) {
+                die('CURL Error: ' . curl_error($ch));
+            }
+            if ($response) {
+                $data = json_decode($response, true);
+
+                if ($data === null) {
+                    die('Invalid JSON data');
+                }
+            }
+
+            $id_size = $data['data']['idSize'];
+
+
+
             if ($value > 0) {
                 $co = 0;
                 foreach ($array as $spnh) {
@@ -87,42 +107,58 @@ date_default_timezone_set('Africa/Nairobi');
 $now = date('d-m-Y');
 
 if (isset($_POST['nhaphang'])) {
+   
     $valid = 1;
-    if (count($_SESSION["phieunhap"]) == 0) {
-        $valid = 0;
+    if (!isset($_SESSION['phieunhap'])) {
         echo "<script type='text/javascript'>alert('Danh sách sản phẩm trống');</script>";
-    }
-    if ($valid == 1) {
-        date_default_timezone_set('Africa/Nairobi');
-        $now = date('Y-m-d');
-        $db = new Helper();
-        $stmt = "insert into tbl_phieunhap(id_nv,id_ncc,tongtien,tongsl,ngaynhap)value(?,?,?,?,?)";
-        $para = [$_SESSION["user"]["id_user"], $_POST['nhacungcap'], $_POST['tongtien'], $_POST['tongsl'], $now];
-        $db->execute($stmt, $para);
-        $stmt1 = "select id_pn from tbl_phieunhap ORDER BY id_pn desc limit 1";
-        $result1 = $db->fetchOne($stmt1);
-        $id_px = $result1['id_pn'];
-        foreach ($_SESSION['phieunhap'] as $spnh) {
-            $stmt = "insert into tbl_chitiet_pn (id_pn,id_pro,id_size,soluong,dongia) value (?,?,?,?,?)";
-            $para = [$id_px, $spnh['id_pro'], $spnh['id_size'], $spnh['soluong'], $spnh['gianhap']];
-            $db->execute($stmt, $para);
-            $stmt0 = "select id_pro from tbl_pro_soluong where id_pro = ? and id_size = ?";
-            $para0 = [$spnh['id_pro'], $spnh['id_size']];
-            if ($db->rowCount($stmt0, $para0) > 0) {
-                $stmt0 = "select soluong from tbl_pro_soluong where id_pro = ? and id_size = ?";
-                $para0 = [$spnh['id_pro'], $spnh['id_size']];
-                $soluongtemp = $db->fetchOne($stmt0, $para0);
-                $stmt1 = "update tbl_pro_soluong set soluong = ? where id_pro = ? and id_size = ?";
-                $para1 = [$soluongtemp['soluong'] * 1 + $spnh['soluong'] * 1, $spnh['id_pro'], $spnh['id_size']];
-                $db->execute($stmt1, $para1);
+    } else {
+        if (count($_SESSION["phieunhap"]) == 0) {
+            $valid = 0;
+            echo "<script type='text/javascript'>alert('Danh sách sản phẩm trống');</script>";
+        }
+        if ($valid == 1) {
+            $_SESSION['tongtien'] = $_POST['tongtien'];
+            $_SESSION['tongsl'] = $_POST['tongsl'];
+            $_SESSION['nhacungcap'] = $_POST['nhacungcap'];
+            $data = array(
+                'nhacungcap' => $_POST['nhacungcap'],
+                'idUser' => $_SESSION['user']['idUser'],
+                'tongtien' => $_POST['tongtien'],
+                'tongsl' => $_POST['tongsl'],
+                'phieunhap' => $_SESSION['phieunhap']
+
+            );
+
+            $data_string = json_encode($data);
+
+            $ch = curl_init('http://localhost:8080/api-admin/controller-chitietpn/create');
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt(
+                $ch,
+                CURLOPT_HTTPHEADER,
+                array(
+                    'Content-Type: application/json',
+                    'Content-Length: ' . strlen($data_string)
+                )
+            );
+
+            $result = curl_exec($ch);
+            curl_close($ch);
+
+            $response = json_decode($result, true);
+
+            if ($response && $response['status'] == 'ok') {
+                echo "<script type='text/javascript'>alert('Nhập hàng thành công');</script>";
+                $_SESSION['tongtien'] = "0";
+                $_SESSION['tongsl'] = "0";
+                $_SESSION['phieunhap'] = array();
+                echo "<meta http-equiv='refresh' content='0'>";
             } else {
-                $stmt1 = "insert into tbl_pro_soluong(soluong,id_pro,id_size) values (?, ?, ?)";
-                $para1 = [$spnh['soluong'], $spnh['id_pro'], $spnh['id_size']];
-                $db->execute($stmt1, $para1);
+                echo "<script type='text/javascript'>alert('Có lỗi xảy ra khi nhập hàng');</script>";
             }
         }
-        $_SESSION['phieunhap'] = array();
-        echo "<script type='text/javascript'>alert('Nhập hàng thành công');</script>";
     }
 }
 ?>
@@ -141,31 +177,58 @@ if (isset($_POST['nhaphang'])) {
     <div class="row">
         <div class="col-md-12" style="overflow: scroll;">
             <div class="box box-info" style="width: 1500px;">
-                <div style="width: 1500px; display: flex; height: 500px;" >
+                <div style="width: 1500px; display: flex; height: 500px;">
                     <div style="width: 500px; margin-right: 50px;">
                         <h3 style="text-align: center;">PHIẾU NHẬP</h3>
                         <div style="height:400px; border: 1px solid black; border-radius: 15px; padding: 20px 2px;">
                             <form method="post">
                                 <div class="row" style="margin: 5px 0; text-align:center;">
                                     <div class="col-md-5 text-right"><span style="font-size: 2rem;">Tên nhân viên: </span></div>
-                                    <div class="col-md-7"><strong style="font-size: 2rem;"><?php echo $_SESSION['user']['ten_user'] ?></strong></div>
+                                    <div class="col-md-7"><strong style="font-size: 2rem;"><?php echo $_SESSION['user']['tenUser'] ?></strong></div>
                                 </div>
+
+
+
                                 <div class="row" style="margin: 5px 0; text-align:center;">
                                     <div class="col-md-5 text-right" style="font-size: 2rem;">Nhà cung cấp:</div>
-                                    <div class="col-md-7"><select name="nhacungcap" id="" style="width: 130px;height: 30px; border: 2px groove black; border-radius: 5px;">
+                                    <div class="col-md-7"><select name="nhacungcap" id="" style="width: 130px;height: 3 0px; border: 2px groove black; border-radius: 5px;">
                                             <?php
-                                            $db = new Helper();
-                                            $stmt = "select * from tbl_nhacungcap where daxoa <>1";
-                                            $result = $db->fetchAll($stmt);
+
+                                            $apiUrl = 'http://localhost:8080/api-admin/controller-chitietpn/show-nhacungcap';
+                                            $ch = curl_init($apiUrl);
+                                            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+                                            $response = curl_exec($ch);
+
+                                            curl_close($ch);
+
+                                            if ($response === false) {
+                                                die('CURL Error: ' . curl_error($ch));
+                                            }
+                                            if ($response) {
+                                                $data = json_decode($response, true);
+
+                                                if ($data === null) {
+                                                    die('Invalid JSON data');
+                                                }
+                                            }
+
+
+                                          
+                                            $result = $data['data'];
                                             foreach ($result as $row) {
                                             ?>
-                                                <option value="<?php echo $row['id_ncc'] ?>"><?php echo $row['ten_ncc'] ?></option>
+                                                <option value="<?php echo $row['id'] ?>"><?php echo $row['tenNcc'] ?></option>
                                             <?php
                                             }
                                             ?>
                                         </select>
                                     </div>
                                 </div>
+
+
+
+
                                 <div class="row" style="margin: 5px 0; text-align:center;">
                                     <div class="col-md-5 text-right" style="font-size: 2rem;">Ngày nhập:</div>
                                     <div class="col-md-7"><strong style="font-size: 2rem;"><?php echo $now ?></strong></div>
@@ -226,19 +289,40 @@ if (isset($_POST['nhaphang'])) {
                     </div>
                 </div>
                 <div class="box-body table-responsive">
+
+                    <?php
+
+                    $apiUrl = 'http://localhost:8080/api-admin/controller-chitietpn/show';
+                    $ch = curl_init($apiUrl);
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+                    $response = curl_exec($ch);
+
+                    curl_close($ch);
+
+                    if ($response === false) {
+                        die('CURL Error: ' . curl_error($ch));
+                    }
+                    if ($response) {
+                        $data = json_decode($response, true);
+
+                        if ($data === null) {
+                            die('Invalid JSON data');
+                        }
+                    }
+                    ?>
                     <div class="wrap col-md-12">
                         <div class="m-5">
                             <form style="display:flex; margin: 30px 0 10px 0;">
                                 <div style="padding: 0 20px;">
-                                    Search <input type="text" id="search" placeholder="ID or Name">
+                                    Search <input type="text" id="search" placeholder="ID or Name" style="height: 30px; width: 200px; ">
                                 </div>
                                 <div style="padding: 0 20px;">
-                                    Nhãn hiệu <select name="" onchange="show(1)" id="nhanhieu">
+                                    Nhãn hiệu <select name="" onchange="show(1)" id="nhanhieu" style="height: 30px; width: 150px; ">
                                         <option value="">Tất cả</option>
                                         <?php
-                                        $db = new Helper();
-                                        $stmt = "select * from tbl_nhanhieu";
-                                        $result = $db->fetchAll($stmt);
+
+                                        $result = $data['list_data']['list_nhanhieu'];
                                         foreach ($result as $row) {
                                         ?>
                                             <option value="<?php echo $row['id_nh'] ?>"><?php echo $row['nhanhieu'] ?></option>
@@ -249,30 +333,24 @@ if (isset($_POST['nhaphang'])) {
 
                                 </div>
                                 <div style="padding: 0 20px;">
-                                    Danh mục <select name="" onchange="show(1)" id="danhmuc">
+                                    Danh mục <select name="" onchange="show(1)" id="danhmuc" style="height: 30px; width: 150px; ">
                                         <option value="">Tất cả</option>
                                         <?php
-                                        $db = new Helper();
-                                        $stmt = "select * from tbl_danhmuc";
-                                        $result = $db->fetchAll($stmt);
+                                        $result = $data['list_data']['list_danhmuc'];
                                         foreach ($result as $row) {
                                         ?>
-                                            <option value="<?php echo $row['id_dm'] ?>"><?php echo $row['danhmuc'] ?></option>
+                                            <option value="<?php echo $row['idDm'] ?>"><?php echo $row['danhMuc'] ?></option>
                                         <?php
                                         }
                                         ?>
                                     </select>
                                 </div>
                                 <div style="padding: 0 20px;">
-                                    Số Dòng / Trang <select name="" onchange="show(1)" id="sodong">
-                                        <option value="5">5</option>
-                                        <option value="10">10</option>
-                                        <option value="15">15</option>
-                                        <option value="20">20</option>
-                                    </select>
+                                    Số Dòng / Trang <input type="number" onchange="show(1)" min="1" value="5" id="sodong" style="height: 30px; width: 50px; ">
+
 
                                 </div>
-                                <div style="padding: 0 20px;"><input type="button" id="tim" value="Tim" onclick="show(1)"></div>
+                                <div style="padding: 0 20px;"><input type="button" id="tim" value="Tìm" onclick="show(1)" style="height: 30px; width: 50px; "></div>
 
                             </form>
                         </div>
@@ -297,10 +375,10 @@ if (isset($_POST['nhaphang'])) {
                     </style>
                     <nav aria-label="Page navigation " style="width: 100%; display: flex; justify-content: center; padding-bottom: 20px;">
 
-<ul class="pagination mt-3 row " id="trang" style="width: 400px; display: flex; justify-content: center; overflow-x: scroll;">
-</ul>
+                        <ul class="pagination mt-3 row " id="trang" style="width: 400px; display: flex; justify-content: center; overflow-x: scroll;">
+                        </ul>
 
-</nav>
+                    </nav>
                 </div>
             </div>
         </div>
@@ -322,9 +400,7 @@ if (isset($_POST['nhaphang'])) {
                         <input type="text" hidden name="ten_pro" value="" id="ten_pro">
                         <div style="margin-left: 30px;">
                             <?php
-                            $statement = $pdo->prepare("SELECT * FROM tbl_size ORDER BY size ASC");
-                            $statement->execute();
-                            $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+                            $result = $data['list_data']['list_size'];
 
                             foreach ($result as $row) {
                             ?>
@@ -379,6 +455,11 @@ if (isset($_POST['nhaphang'])) {
         var id_nh = document.getElementById("nhanhieu").value;
         var id_dm = document.getElementById("danhmuc").value;
         var sodong = document.getElementById("sodong").value;
+        if (sodong < 1) {
+            alert("Số dòng không hợp lệ");
+            document.getElementById("sodong").value = 5;
+            return;
+        }
         var xmlhttp = new XMLHttpRequest();
         xmlhttp.onreadystatechange = function() {
             if (this.readyState == 4 && this.status == 200) {
@@ -387,7 +468,7 @@ if (isset($_POST['nhaphang'])) {
                 document.getElementById("trang").innerHTML = inra[1];
             }
         }
-        xmlhttp.open("GET", "../Model/dulieugh-tk-pt.php?p=" + p + "&search=" + search + "&id_nh=" + id_nh + "&id_dm=" + id_dm + "&sodong=" + sodong, true);
+        xmlhttp.open("GET", "../Controllers/controller_nhaphang/controller_dulieunh.php?p=" + p + "&search=" + search + "&id_nh=" + id_nh + "&id_dm=" + id_dm + "&sodong=" + sodong, true);
         xmlhttp.send();
     }
     window.onload = show(1);
@@ -400,7 +481,7 @@ if (isset($_POST['nhaphang'])) {
                 document.getElementById("soluongsize").innerHTML = this.responseText;
             }
         }
-        xmlhttp.open("GET", "../Model/product-soluong.php?id_pro=" + p, true);
+        xmlhttp.open("GET", "../Controllers/controller_product/controller_product_SL.php?id_pro=" + p, true);
         xmlhttp.send();
     }
 
@@ -413,7 +494,7 @@ if (isset($_POST['nhaphang'])) {
                 document.getElementById("ten_pro").value = inra[1];
             }
         }
-        xmlhttp.open("GET", "../Model/LayTen.php?id_pro=" + p, true);
+        xmlhttp.open("GET", "../Controllers/controller_product/LayTen.php?id_pro=" + p, true);
         xmlhttp.send();
     }
 </script>

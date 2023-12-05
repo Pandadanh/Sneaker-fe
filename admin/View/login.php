@@ -4,6 +4,7 @@ include("../Control/inc/config.php");
 include("../Control/inc/functions.php");
 $error_message = '';
 
+// echo "<script type='text/javascript'>alert('Xin đăng nhập lại bằng tài khoản Admin');</script>";
 if (isset($_POST['form1'])) {
 
 	if (empty($_POST['email']) || empty($_POST['password'])) {
@@ -13,29 +14,59 @@ if (isset($_POST['form1'])) {
 		$email = strip_tags($_POST['email']);
 		$password = strip_tags($_POST['password']);
 
-		$statement = $pdo->prepare("SELECT * FROM tbl_users WHERE email=?");
-		$statement->execute(array($email));
-		$total = $statement->rowCount();
-		$result = $statement->fetchAll(PDO::FETCH_ASSOC);
-		if ($total == 0) {
-			$error_message .= 'Email Address does not match<br>';
-		} else {
-			foreach ($result as $row) {
-				$row_password = $row['matkhau'];
-				$id_loaitk=$row['id_loaitk'];
-				$trangthai=$row['trangthai'];
-			}
-			if ($row_password != ($password)) {
-				$error_message .= 'Password does not match<br>';
-			} else {
-				if ($trangthai == 1 || $id_loaitk==1) {
-					echo "<script type='text/javascript'>alert('Tài khoản của bạn không thể đăng nhập');</script>";
+		$data = array(
+			'email' => $email,
+			'matkhau' => $password
+		);
+
+		$json_data = json_encode($data);
+		$api_url = 'http://localhost:8080/api/controller-user/login'; // Địa chỉ API của Spring Boot
+
+		$ch = curl_init($api_url);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_POST, true);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $json_data);
+
+		// Đặt tiêu đề để chỉ định rằng dữ liệu được gửi dưới dạng JSON
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+			'Content-Type: application/json',
+			'Content-Length: ' . strlen($json_data)
+		));
+
+		$response = curl_exec($ch);
+		$http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		curl_close($ch);
+
+		if ($http_code == 200) {
+			$data = json_decode($response, true);
+			if ($data["status"] == "ok") {
+
+				$row_password = $data['data']['matKhau'];
+				$id_loaitk = $data['data']['nhomQuyen']["nhomquyen"];
+				$trangthai = $data['data']['trangThai'];
+
+				if ($row_password != ($password)) {
+					$error_message .= 'Password does not match<br>';
 				} else {
-					$_SESSION['user'] = $row;
-					header("location: ../Control/index.php?page=dashboard");
+					if ($id_loaitk == "Admin" || $id_loaitk == "Nhân viên" || $id_loaitk == "Quản lý") {
+						$_SESSION['user'] = $data['data'];
+						header("location: ../Control/index.php?page=profile-edit");
+					} else {
+						echo "<script type='text/javascript'>alert('Tài khoản của bạn không có quyền truy cập');</script>";
+						echo "<meta http-equiv='refresh' content='0;url=../View/login.php'>";
+					}
 				}
+				exit;
 			}
+		} else {
+			// echo "<script type='text/javascript'>alert('Login failed. Please try again');</script>";
 		}
+	}
+	if ($http_code == 404) {
+		$error_message .= 'Login failed. Please try again<br>';;
+		// header("Location: ../Control/index.php?page=login");
+	} else {
+		$error_message .= 'Email Address does not match<br>';;
 	}
 }
 ?>
@@ -99,23 +130,6 @@ if (isset($_POST['form1'])) {
 		</div>
 	</div>
 
-
-	<!-- <script src="../Control/js/jquery-2.2.3.min.js"></script>
-<script src="../Control/js/bootstrap.min.js"></script>
-<script src="../Control/js/jquery.dataTables.min.js"></script>
-<script src="../Control/js/dataTables.bootstrap.min.js"></script>
-<script src="../Control/js/select2.full.min.js"></script>
-<script src="../Control/js/jquery.inputmask.js"></script>
-<script src="../Control/js/jquery.inputmask.date.extensions.js"></script>
-<script src="../Control/js/jquery.inputmask.extensions.js"></script>
-<script src="../Control/js/moment.min.js"></script>
-<script src="../Control/js/bootstrap-datepicker.js"></script>
-<script src="../Control/js/icheck.min.js"></script>
-<script src="../Control/js/fastclick.js"></script>
-<script src="../Control/js/jquery.sparkline.min.js"></script>
-<script src="../Control/js/jquery.slimscroll.min.js"></script>
-<script src="../Control/js/app.min.js"></script>
-<script src="../Control/js/demo.js"></script> -->
 
 </body>
 

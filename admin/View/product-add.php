@@ -23,7 +23,7 @@ if (isset($_POST['form1'])) {
 	}
 	$path = $_FILES['hinhanh']['name'];
 	$path_tmp = $_FILES['hinhanh']['tmp_name'];
-
+	$ext = pathinfo($path, PATHINFO_EXTENSION);
 	if ($path != '') {
 		$ext = pathinfo($path, PATHINFO_EXTENSION);
 		$file_name = basename($path, '.' . $ext);
@@ -31,10 +31,7 @@ if (isset($_POST['form1'])) {
 			$valid = 0;
 			$error_message .= 'You must have to upload jpg, jpeg, gif or png file<br>';
 		}
-	} else {
-		$valid = 0;
-		$error_message .= 'You must have to select a featured photo<br>';
-	}
+	} 
 	if ($valid == 1) {
 		$statement = $pdo->prepare("SHOW TABLE STATUS LIKE 'tbl_product'");
 		$statement->execute();
@@ -42,52 +39,18 @@ if (isset($_POST['form1'])) {
 		foreach ($result as $row) {
 			$ai_id = $row[10];
 		}
-		if (isset($_FILES['photo']["name"]) && isset($_FILES['photo']["tmten_pro"])) {
-			$photo = array();
-			$photo = $_FILES['photo']["name"];
-			$photo = array_values(array_filter($photo));
-
-			$photo_temp = array();
-			$photo_temp = $_FILES['photo']["tmten_pro"];
-			$photo_temp = array_values(array_filter($photo_temp));
-
-			$statement = $pdo->prepare("SHOW TABLE STATUS LIKE 'tbl_product_photo'");
-			$statement->execute();
-			$result = $statement->fetchAll();
-			foreach ($result as $row) {
-				$next_id1 = $row[10];
-			}
-			$z = $next_id1;
-
-			$m = 0;
-			for ($i = 0; $i < count($photo); $i++) {
-				$my_ext1 = pathinfo($photo[$i], PATHINFO_EXTENSION);
-				if ($my_ext1 == 'jpg' || $my_ext1 == 'png' || $my_ext1 == 'jpeg' || $my_ext1 == 'gif') {
-					$final_name1[$m] = $z . '.' . $my_ext1;
-					move_uploaded_file($photo_temp[$i], "../assets/uploads/product_photos/" . $final_name1[$m]);
-					$m++;
-					$z++;
-				}
-			}
-			if (isset($final_name1)) {
-				for ($i = 0; $i < count($final_name1); $i++) {
-					$statement = $pdo->prepare("INSERT INTO tbl_product_photo (photo,p_id) VALUES (?,?)");
-					$statement->execute(array($final_name1[$i], $ai_id));
-				}
-			}
-		}
 		$final_name = 'product-featured-' . $ai_id . '.' . $ext;
-		move_uploaded_file($path_tmp, '../assets/uploads/' . $final_name);
+		move_uploaded_file($path_tmp, '../../uploads/' . $final_name);
 		//Saving data into the main table tbl_product
 		$statement = $pdo->prepare("INSERT INTO tbl_product(
 										ten_pro,
-										id_danhmuc,
-										id_nhanhieu,
+										id_dm,
+										id_nh,
 										giacu,
 										giamoi,
 										hinhanh,
 										mota,
-										total_view
+										total_view,
 										pro_new
 									) VALUES (?,?,?,?,?,?,?,?,?)");
 		$statement->execute(array(
@@ -99,7 +62,7 @@ if (isset($_POST['form1'])) {
 			$final_name,
 			$_POST['mota'],
 			0,
-			$_POST['pro_new'],
+			$_POST['pro_new']
 		));
 		$success_message = 'Product is added successfully.';
 	}
@@ -199,14 +162,7 @@ if (isset($_POST['form1'])) {
 								<input type="file" name="hinhanh" accept=".jpg, .png">
 							</div>
 						</div>
-						<div class="form-group">
-							<label for="" class="col-sm-3 control-label">Ảnh khác<br><span style="font-size:10px;font-weight:normal;">(Có thể không chọn hoặc chọn nhiều ảnh)</span></label>
-							<div class="col-sm-4" style="padding-top:4px;">
-								<table id="ProductTable" style="width:100%;">
-									<input type="file" name="photo[]" style="margin-bottom:5px;" accept=".jpg, .png" multiple>
-								</table>
-							</div>
-						</div>
+						
 						<div class="form-group">
 							<label for="" class="col-sm-3 control-label">Mô tả</label>
 							<div class="col-sm-8">

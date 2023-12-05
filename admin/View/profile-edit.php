@@ -1,61 +1,66 @@
 <?php
+// print_r($_SESSION);
 if (isset($_POST['form1'])) {
 
-	if ($_SESSION['user']['role'] == 'Super Admin') {
+	// if ($_SESSION['user']['role'] == 'Super Admin') {
 
-		$valid = 1;
+	$valid = 1;
 
-		if (empty($_POST['full_name'])) {
+	if (empty($_POST['full_name'])) {
+		$valid = 0;
+		$error_message .= "Name can not be empty<br>";
+	}
+	if (empty($_POST['sodth'])) {
+		$valid = 0;
+		$error_message .= "Phone Number can not be empty<br>";
+	}
+
+	if (empty($_POST['email'])) {
+		$valid = 0;
+		$error_message .= 'Email address can not be empty<br>';
+	} else {
+		if (filter_var($_POST['email'], FILTER_VALIDATE_EMAIL) === false) {
 			$valid = 0;
-			$error_message .= "Name can not be empty<br>";
-		}
-
-		if (empty($_POST['email'])) {
-			$valid = 0;
-			$error_message .= 'Email address can not be empty<br>';
+			$error_message .= 'Email address must be valid<br>';
 		} else {
-			if (filter_var($_POST['email'], FILTER_VALIDATE_EMAIL) === false) {
-				$valid = 0;
-				$error_message .= 'Email address must be valid<br>';
-			} else {
-				// current email address that is in the database
-				$statement = $pdo->prepare("SELECT * FROM tbl_users WHERE id_user=?");
-				$statement->execute(array($_SESSION['user']['id_user']));
-				$result = $statement->fetchAll(PDO::FETCH_ASSOC);
-				foreach ($result as $row) {
-					$current_email = $row['email'];
-				}
+			// current email address that is in the database
+			$statement = $pdo->prepare("SELECT * FROM tbl_users WHERE id_user=?");
+			$statement->execute(array($_SESSION['user']['id_user']));
+			$result = $statement->fetchAll(PDO::FETCH_ASSOC);
+			foreach ($result as $row) {
+				$current_email = $row['email'];
+			}
 
-				$statement = $pdo->prepare("SELECT * FROM tbl_users WHERE email=? and email!=?");
-				$statement->execute(array($_POST['email'], $current_email));
-				$total = $statement->rowCount();
-				if ($total) {
-					$valid = 0;
-					$error_message .= 'Email address already exists<br>';
-				}
+			$statement = $pdo->prepare("SELECT * FROM tbl_users WHERE email=? and email!=?");
+			$statement->execute(array($_POST['email'], $current_email));
+			$total = $statement->rowCount();
+			if ($total) {
+				$valid = 0;
+				$error_message .= 'Email address already exists<br>';
 			}
 		}
+	}
 
-		if ($valid == 1) {
+	if ($valid == 1) {
 
-			$_SESSION['user']['full_name'] = $_POST['full_name'];
-			$_SESSION['user']['email'] = $_POST['email'];
-
-			// updating the database
-			$statement = $pdo->prepare("UPDATE tbl_users SET full_name=?, email=?, sodth=? WHERE id_user=?");
-			$statement->execute(array($_POST['full_name'], $_POST['email'], $_POST['sodth'], $_SESSION['user']['id_user']));
-
-			$success_message = 'User Information is updated successfully.';
-		}
-	} else {
-		$_SESSION['user']['sodth'] = $_POST['sodth'];
+		$_SESSION['user']['full_name'] = $_POST['full_name'];
+		$_SESSION['user']['email'] = $_POST['email'];
 
 		// updating the database
-		$statement = $pdo->prepare("UPDATE tbl_users SET sodth=? WHERE id_user=?");
-		$statement->execute(array($_POST['sodth'], $_SESSION['user']['id_user']));
+		$statement = $pdo->prepare("UPDATE tbl_users SET ten_user=?, email=?, sodth=? WHERE id_user=?");
+		$statement->execute(array($_POST['full_name'], $_POST['email'], $_POST['sodth'], $_SESSION['user']['id_user']));
 
 		$success_message = 'User Information is updated successfully.';
 	}
+	// } else {
+	// 	$_SESSION['user']['sodth'] = $_POST['sodth'];
+
+	// 	// updating the database
+	// 	$statement = $pdo->prepare("UPDATE tbl_users SET sodth=? WHERE id_user=?");
+	// 	$statement->execute(array($_POST['sodth'], $_SESSION['user']['id_user']));
+
+	// 	$success_message = 'User Information is updated successfully.';
+	// }
 }
 
 if (isset($_POST['form2'])) {
@@ -130,7 +135,7 @@ if (isset($_POST['form3'])) {
 
 <?php
 $statement = $pdo->prepare("SELECT * FROM tbl_users WHERE id_user=?");
-$statement->execute(array($_SESSION['user']['id_user']));
+$statement->execute(array($_SESSION['user']['idUser']));
 $statement->rowCount();
 $result = $statement->fetchAll(PDO::FETCH_ASSOC);
 foreach ($result as $row) {
@@ -147,7 +152,21 @@ foreach ($result as $row) {
 
 	<div class="row">
 		<div class="col-md-12">
+		<?php if($error_message): ?>
+			<div class="callout callout-danger">
+			
+			<p>
+			<?php echo $error_message; ?>
+			</p>
+			</div>
+			<?php endif; ?>
 
+			<?php if($success_message): ?>
+			<div class="callout callout-success">
+			
+			<p><?php echo $success_message; ?></p>
+			</div>
+			<?php endif; ?>
 			<div class="nav-tabs-custom">
 				<ul class="nav nav-tabs">
 					<li class="active"><a href="#tab_1" data-toggle="tab">Update Information</a></li>
@@ -156,28 +175,15 @@ foreach ($result as $row) {
 				</ul>
 				<div class="tab-content">
 					<div class="tab-pane active" id="tab_1">
-
 						<form class="form-horizontal" action="" method="post">
 							<div class="box box-info">
 								<div class="box-body">
 									<div class="form-group">
 										<label for="" class="col-sm-2 control-label">Name <span>*</span></label>
-										<?php
-										if ($_SESSION['user']['nhomquyen'] == 'Super Admin') {
-										?>
-											<div class="col-sm-4">
-												<input type="text" class="form-control" name="full_name" value="<?php echo $full_name; ?>">
-											</div>
-										<?php
-										} else {
-										?>
-											<div class="col-sm-4" style="padding-top:7px;">
-												<!-- <?php echo $full_name; ?> -->
-												<input type="text" name="hoten" id="" placeholder="<?php echo $full_name; ?>">
-											</div>
-										<?php
-										}
-										?>
+										<div class="col-sm-4" style="padding-top:7px;">
+											<!-- <?php echo $full_name; ?> -->
+											<input type="text" name="full_name" id="" value="<?php echo $full_name; ?>">
+										</div>
 
 									</div>
 									<div class="form-group">

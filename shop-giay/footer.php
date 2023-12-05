@@ -57,55 +57,50 @@
                 <div class="footer-wrap">
                     <h2 class="footer-title">INSTAGRAM</h2>
                     <div class="container">
-                        <ul class="list-instagram">
-                            <div class="row">
-                                <li class="instagram-item col-lg-4 col-md-4 col-sm-4 px-1 mb-2 p-0">
-                                    <a href="https://www.instagram.com/thanhhungfutsal/" class="d-block">
-                                        <img class="img-insta" src="assets/images/insta1.jpg" max-width="90px" height="90px" alt="insta1" />
-                                    </a>
-                                </li>
-                                <li class="instagram-item col-lg-4 col-md-4 col-sm-4 px-1 mb-2 ">
-                                    <a href="https://www.instagram.com/thanhhungfutsal/" class="d-block">
-                                        <img class="img-insta" src="assets/images/insta1.jpg" max-width="90px" height="90px" alt="insta1" />
-                                    </a>
-                                </li>
-                                <li class="instagram-item col-lg-4 col-md-4 col-sm-4 px-1 mb-2">
-                                    <a href="https://www.instagram.com/thanhhungfutsal/" class="d-block">
-                                        <img class="img-insta" src="assets/images/insta1.jpg" max-width="90px" height="90px" alt="insta1" />
-                                    </a>
-                                </li>
-                                <li class="instagram-item col-lg-4 col-md-4 col-sm-4 px-1 mb-2 ">
-                                    <a href="https://www.instagram.com/thanhhungfutsal/" class="d-block">
-                                        <img class="img-insta" src="assets/images/insta1.jpg" max-width="90px" height="90px" alt="insta1" />
-                                    </a>
-                                </li>
-                                <li class="instagram-item col-lg-4 col-md-4 col-sm-4 px-1 mb-2">
-                                    <a href="https://www.instagram.com/thanhhungfutsal/" class="d-block">
-                                        <img class="img-insta" src="assets/images/insta1.jpg" max-width="90px" height="90px" alt="insta1" />
-                                    </a>
-                                </li>
-                                <li class="instagram-item col-lg-4 col-md-4 col-sm-4 px-1 mb-2">
-                                    <a href="https://www.instagram.com/thanhhungfutsal/" class="d-block">
-                                        <img class="img-insta" src="assets/images/insta1.jpg" max-width="90px" height="90px" alt="insta1" />
-                                    </a>
-                                </li>
-                                <li class="instagram-item col-lg-4 col-md-4 col-sm-4 px-1 mb-2">
-                                    <a href="https://www.instagram.com/thanhhungfutsal/" class="d-block">
-                                        <img class="img-insta" src="assets/images/insta1.jpg" max-width="90px" height="90px" alt="insta1" />
-                                    </a>
-                                </li>
-                                <li class="instagram-item col-lg-4 col-md-4 col-sm-4 px-1 mb-2 ">
-                                    <a href="https://www.instagram.com/thanhhungfutsal/" class="d-block">
-                                        <img class="img-insta" src="assets/images/insta1.jpg" max-width="90px" height="90px" alt="insta1" />
-                                    </a>
-                                </li>
-                                <li class="instagram-item col-lg-4 col-md-4 col-sm-4 px-1 mb-2 ">
-                                    <a href="https://www.instagram.com/thanhhungfutsal/" class="d-block">
-                                        <img class="img-insta" src="assets/images/insta1.jpg" max-width="90px" height="90px" alt="insta1" />
-                                    </a>
-                                </li>
-                            </div>
-                        </ul>
+
+                        <?php
+
+
+                        $apiUrl = 'http://localhost:8080/api/controller-page/footer/';
+                        $curl = curl_init($apiUrl);
+                        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+                        $response = curl_exec($curl);
+                        curl_close($curl);
+
+                        $data = json_decode($response, true);
+
+                    
+                        $result = $data['data'];
+                        foreach ($result as $row) {
+                            if ($row['tenmxh'] == "Facebook" && $row["url"] != "") {
+                                echo ' <a href="' . $row["url"] . '"><img  style="border-radius:  50%; width: 14%;height: 14%; margin: 10px;" src="./icon/facebook_480px.png"> </a>';
+                            }
+                            if ($row['tenmxh'] == "Instagram" && $row["url"] != "") {
+                                echo ' <a href="' . $row["url"] . '"><img style="border-radius: 50%; width: 14%;height: 14%; margin: 10px;" src="./icon/instagram_480px.png"></a>';
+                            }
+                            if ($row['tenmxh'] == "LinkedIn" && $row["url"] != "") {
+                                echo ' <a href="' . $row["url"] . '"><img style="border-radius: 50%; width: 14%;height: 14%; margin: 10px;" src="./icon/linkedin_480px.png">
+                                </a>';
+                            }
+                            if ($row['tenmxh'] == "Twitter" && $row["url"] != "") {
+                                echo ' <a href="' . $row["url"] . '"><img style="border-radius: 50%; width: 14%;height: 14%; margin: 10px;" src="./icon/twitter_480px.png">
+                                </a>';
+                            }
+                            if ($row['tenmxh'] == "WhatsApp" && $row["url"] != "") {
+                                echo ' <a href="' . $row["url"] . '"><img style="border-radius: 50%; width: 14%;height: 14%; margin: 10px;" src="./icon/whatsapp_480px.png">
+                                </a>';
+                            }
+                            if ($row['tenmxh'] == "YouTube" && $row["url"] != "") {
+                                echo ' <a href="' . $row["url"] . '">                            
+                                    <img style="border-radius: 50%; width: 14%;height: 14%; margin: 10px;" src="./icon/youtube_480px.png"> </a>';
+                            }
+                        }
+                        ?>
+                        <div class="icon-container" style="display: flex; justify-content: center;">
+
+
+                        </div>
+
                     </div>
                 </div>
             </div>

@@ -1,9 +1,22 @@
+<?php
+
+if (ktne11("cds-xoa", $quyen) == false) {
+	$css = "#xoa { display: none}";
+	echo "<style>$css</style>";
+}
+if (ktne11("cds-sua", $quyen) == false) {
+	$css = "#sua { display: none}";
+	echo "<style>$css</style>";
+}
+
+?>
+
 <section class="content-header">
 	<div class="content-header-left">
 		<h1>Quản lý Sizes</h1>
 	</div>
 	<div class="content-header-right">
-		<a href="index.php?page=size-add" class="btn btn-primary btn-sm">Add New</a>
+		<a href="index.php?page=size-add" class="btn btn-primary btn-sm" <?php ktne("cds-them", $quyen) ?>>Add New</a>
 	</div>
 </section>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
@@ -72,7 +85,7 @@
 				document.getElementById("trang").innerHTML = inra[1];
 			}
 		}
-		xmlhttp.open("GET", "../Model/size-pt-tk.php?p=" + p + "&search=" + search, true);
+		xmlhttp.open("GET", "../Controllers/controller_size/controller_size-pt-tk.php?p=" + p + "&search=" + search, true);
 		xmlhttp.send();
 	}
 	window.onload = show(1);

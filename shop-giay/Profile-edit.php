@@ -3,9 +3,14 @@ if (isset($_POST['form1'])) {
 
 	$valid = 1;
 
-	if (empty($_POST['full_name'])) {
+	if (empty($_POST['ten_user'])) {
 		$valid = 0;
 		echo "<script type='text/javascript'>alert('Name can not be empty');</script>";
+	}
+
+	if (empty($_POST['diachi'])) {
+		$valid = 0;
+		echo "<script type='text/javascript'>alert('Địa Chỉ address can not be empty');</script>";
 	}
 
 	if (empty($_POST['email'])) {
@@ -16,53 +21,96 @@ if (isset($_POST['form1'])) {
 			$valid = 0;
 			echo "<script type='text/javascript'>alert('Email address must be valid');</script>";
 		} else {
-			// current email address that is in the database
-			// updating the database
-			$db = new Helper();
-			$stmt = "SELECT * FROM tbl_users WHERE id_user=?";
-			$para = [$_SESSION['user1']['id_user']];
 
-			$result = $db->fetchAll($stmt, $para);
-			foreach ($result as $row) {
-				$current_email = $row['email'];
+			$apiUrl = 'http://localhost:8080/api/controller-page/check-UserEmail/';
+
+			// print_r($_SESSION);
+			$data = array(
+				'id_user' => $_SESSION['user1']['data']['idUser'],
+				'email' => $_POST['email']
+			);
+
+			$options = array(
+				'http' => array(
+					'header' => "Content-type: application/x-www-form-urlencoded\r\n",
+					'method' => 'POST',
+					'content' => http_build_query($data)
+				)
+			);
+
+			$context = stream_context_create($options);
+			$response = file_get_contents($apiUrl, false, $context);
+
+			if ($response === false) {
+				// Xử lý lỗi khi không thể kết nối đến API
+				echo "<script type='text/javascript'>alert('ERROR');</script>";
+			} else {
+				 // Xử lý phản hồi từ API
+				 $responseData = json_decode($response, true);
+
+				 // Kiểm tra phản hồi có chứa dữ liệu không
+				 if (isset($responseData['data'])) {
+					 // Trích xuất dữ liệu từ phản hồi
+					 $data = $responseData['data'];
+			 
+					 if($data['mes'] == "Invalid userId or email"){
+						$valid = 0;
+						echo "<script type='text/javascript'>alert('Invalid userId or email');</script>";
+					 }
+					 if( $data['mes'] == "exist email"){
+						$valid = 0;
+						echo "<script type='text/javascript'>alert('Email address already exists');</script>";
+					 }
+					
+				 } else {
+					echo "<script type='text/javascript'>alert('ERROR - data');</script>";
+				 }
 			}
 
-			// updating the database
-			$db = new Helper();
-			$stmt = "SELECT * FROM tbl_users WHERE email=? and email!=?";
-			$para = [$_POST['email'], $current_email];
-
-			$total = $db->rowCount($stmt, $para);
-			if ($total) {
-				$valid = 0;
-				echo "<script type='text/javascript'>alert('Email address already exists');</script>";
-			}
 		}
 	}
 
 	if ($valid == 1) {
 
-		$_SESSION['user1']['full_name'] = $_POST['full_name'];
+		$_SESSION['user1']['ten_user'] = $_POST['ten_user'];
 		$_SESSION['user1']['email'] = $_POST['email'];
+		$_SESSION['user1']['diachi'] = $_POST['diachi'];
+		$_SESSION['user1']['sodth'] = $_POST['sodth'];
 
 		// updating the database
 
-		$db = new Helper();
-		$stmt = "UPDATE tbl_users SET full_name=?, email=?, sodth=? WHERE id_user=?";
-		$para = [$_POST['full_name'], $_POST['email'], $_POST['sodth'], $_SESSION['user1']['id_user']];
-		$db->execute($stmt, $para);
 
-		echo "<script type='text/javascript'>alert('User Information is updated successfully');</script>";
+		$apiUrl = 'http://localhost:8080/api/controller-page/update-user/';
+
+		$data = array(
+			'id_user' => $_SESSION['user1']['data']['idUser'],
+			'ten_user' => $_POST['ten_user'],
+			'email' => $_POST['email'],
+			'diachi' => $_POST['diachi'],
+			'sodth' => $_POST['sodth']
+		);
+
+		$options = array(
+			'http' => array(
+				'header' => "Content-type: application/x-www-form-urlencoded\r\n",
+				'method' => 'POST',
+				'content' => http_build_query($data)
+			)
+		);
+
+		$context = stream_context_create($options);
+		$response = file_get_contents($apiUrl, false, $context);
+
+		if ($response === false) {
+			// Xử lý lỗi khi không thể kết nối đến API
+			echo "<script type='text/javascript'>alert('ERROR');</script>";
+		} else {
+
+			echo "<script type='text/javascript'>alert('User Information is updated successfully');</script>";
+		}
+
 	}
 
-	$_SESSION['user1']['sodth'] = $_POST['sodth'];
-
-
-	$db = new Helper();
-	$stmt = "UPDATE tbl_users SET sodth=? WHERE id_user=?";
-	$para = [$_POST['sodth'], $_SESSION['user1']['id_user']];
-	$db->execute($stmt, $para);
-	echo "<script type='text/javascript'>alert('User Information is updated successfully');</script>";
 }
 
 if (isset($_POST['form2'])) {
@@ -93,12 +141,31 @@ if (isset($_POST['form2'])) {
 		move_uploaded_file($path_tmp, '../uploads/' . $final_name);
 		$_SESSION['user1']['avatar'] = $final_name;
 
-		// updating the database
-		$db = new Helper();
-		$stmt = "UPDATE tbl_users SET avatar=? WHERE id_user=?";
-		$para = [$final_name, $_SESSION['user1']['id_user']];
-		$db->execute($stmt, $para);
-		echo "<script type='text/javascript'>alert('User avatar is updated successfully');</script>";
+
+
+		$apiUrl = 'http://localhost:8080/api/controller-page/update-avatar-user/';
+		$data = array(
+			'id_user' => $_SESSION['user1']['id_user'],
+			'avatar' => $final_name
+			
+		);
+		$options = array(
+			'http' => array(
+				'header' => "Content-type: application/x-www-form-urlencoded\r\n",
+				'method' => 'POST',
+				'content' => http_build_query($data)
+			)
+		);
+		$context = stream_context_create($options);
+		$response = file_get_contents($apiUrl, false, $context);
+		if ($response === false) {
+			// Xử lý lỗi khi không thể kết nối đến API
+			echo "<script type='text/javascript'>alert('ERROR');</script>";
+		} else {
+
+			echo "<script type='text/javascript'>alert('User avatar is updated successfully');</script>";
+		}
+	
 	}
 }
 
@@ -121,23 +188,34 @@ if (isset($_POST['form3'])) {
 
 		$_SESSION['user1']['matkhau'] = $_POST['password'];
 
-		// updating the database
-		$db = new Helper();
-		$stmt = "UPDATE tbl_users SET matkhau=? WHERE id_user=?";
-		$para = [$_POST['password'], $_SESSION['user1']['id_user']];
-		$db->execute($stmt, $para);
-		echo "<script type='text/javascript'>alert('User Password is updated successfully');</script>";
+
+
+		$apiUrl = 'http://localhost:8080/api/controller-page/update-password-user/';
+		$data = array(
+			'id_user' => $_SESSION['user1']['id_user'],
+			'password' => $_POST['password']
+			
+		);
+		$options = array(
+			'http' => array(
+				'header' => "Content-type: application/x-www-form-urlencoded\r\n",
+				'method' => 'POST',
+				'content' => http_build_query($data)
+			)
+		);
+		$context = stream_context_create($options);
+		$response = file_get_contents($apiUrl, false, $context);
+		if ($response === false) {
+			// Xử lý lỗi khi không thể kết nối đến API
+			echo "<script type='text/javascript'>alert('ERROR');</script>";
+		} else {
+
+			echo "<script type='text/javascript'>alert('User Password is updated successfully');</script>";
+		}
+
 	}
 }
 
-if(isset($_POST["huydh"])){
-	$id_huy = $_POST["id_huy"];
-	$db = new Helper();
-	$stmt = "update tbl_phieuxuat set trangthai=2 where id_px=?";
-	$para=[$id_huy];
-	$db->execute($stmt,$para);
-	echo "<script type='text/javascript'>alert('Hủy đơn thành công');</script>";
-}
 ?>
 
 <section class="content-header container mt-2">
@@ -147,10 +225,12 @@ if(isset($_POST["huydh"])){
 </section>
 
 <?php
-$full_name = $_SESSION['user1']['ten_user'];
-$email     = $_SESSION['user1']['email'];
-$sodth     = $_SESSION['user1']['sodth'];
-$avatar     = $_SESSION['user1']['avatar'];
+// print_r($_SESSION);
+$ten_user = $_SESSION['user1']['data']['tenUser'];
+$email     = $_SESSION['user1']['data']['email'];
+$sodth     = $_SESSION['user1']['data']['soDienThoai'];
+$avatar     = $_SESSION['user1']['data']['avatar'];
+$diachi = $_SESSION['user1']['data']['diaChi'];
 ?>
 <style>
 	.tabne {
@@ -184,7 +264,7 @@ $avatar     = $_SESSION['user1']['avatar'];
 										<label for="" class="col-sm-2 control-label">Họ Tên<span>*</span></label>
 
 										<div class="col-sm-4" style="padding-top:7px;">
-											<input type="text" class="form-control" name="hoten" id="" value="<?php echo $full_name ?>">
+											<input type="text" class="form-control" name="ten_user" id="" value="<?php echo $ten_user ?>">
 										</div>
 									</div>
 									<div class="form-group">
@@ -198,6 +278,12 @@ $avatar     = $_SESSION['user1']['avatar'];
 										<label for="" class="col-sm-2 control-label">Số điện thoại</label>
 										<div class="col-sm-4">
 											<input type="text" class="form-control" name="sodth" value="<?php echo $sodth; ?>">
+										</div>
+									</div>
+									<div class="form-group">
+										<label for="" class="col-sm-2 control-label">Địa Chỉ</label>
+										<div class="col-sm-4">
+											<input type="text" class="form-control" name="diachi" value="<?php echo $diachi; ?>">
 										</div>
 									</div>
 									<div class="form-group">
@@ -271,36 +357,43 @@ $avatar     = $_SESSION['user1']['avatar'];
 							</thead>
 							<tbody id="dulieu">
 								<?php
-								$db = new Helper();
-								$stmt = "select * from tbl_phieuxuat where id_kh =? order by ngaydat desc ";
-								$para = [$_SESSION["user1"]["id_user"]];
-								$result = $db->fetchAll($stmt, $para);
+								// print_r($_SESSION);
+
+								$apiUrl = 'http://localhost:8080/api/controller-page/show-user/' . $_SESSION["user1"]['data']["idUser"];
+								$curl = curl_init($apiUrl);
+								curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+								$response = curl_exec($curl);
+								curl_close($curl);
+
+								$data_user = json_decode($response, true);
+
+								$result = $data_user['list_data']['list_phieuXuat'];
+
+
 								foreach ($result as $row) {
 								?>
 									<tr>
-										<td><?php echo $row['id_px'] ?></td>
-										<td><?php echo $row['ngaydat'] ?></td>
-										<td><?php echo $row['tongsl'] ?></td>
-										<td><?php echo money($row['tongtien']) ?></td>
+										<td><?php echo $row['idPx'] ?></td>
+										<td><?php echo $row['ngayDat'] ?></td>
+										<td><?php echo $row['tongSoLuong'] ?></td>
+										<td><?php echo money($row['tongTien']) ?></td>
 										<td><?php
-											if ($row['trangthai'] == 0) {
+											if ($row['trangThai'] == 0) {
 												echo  "Chờ xác nhận";
-												?>
-												<form action="" method="post">
-													<input type="text" name="id_huy" hidden value="<?php echo $row['id_px'] ?>">
-													<button type="submit" onclick="return confirm('Bạn có muốn hủy đơn không')" class="btn btn-danger" name="huydh">Hủy Đơn</button>
-												</form>
-												<?php
+											?>
+											
+											<?php
 											}
-											if ($row['trangthai'] == 1) {
+											if ($row['trangThai'] == 1) {
 												echo  "Đã xác nhận";
 											}
-											if ($row['trangthai'] == 2) {
+											if ($row['trangThai'] == 2) {
 												echo  "Đã Hủy";
 											}
-											?></td>
+											?>
+										</td>
 										<td>
-											<a href="#" class="btn btn-warning" data-href="" data-toggle="modal" onclick="chitietne(<?php echo $row['id_px'] ?>)" data-target="#chitiet">Chi Tiết</a>
+											<a href="#" class="btn btn-warning" data-href="" data-toggle="modal" onclick="chitietne(<?php echo $row['idPx'] ?>)" data-target="#chitiet">Chi Tiết</a>
 										</td>
 									</tr>
 								<?php
@@ -354,7 +447,7 @@ $avatar     = $_SESSION['user1']['avatar'];
 
 			}
 		}
-		xmlhttp.open("GET", "chitietdh.php?id_lay=" + id_lay, true);
+		xmlhttp.open("GET", "./controllers/controller_chitietdh.php?id_lay=" + id_lay, true);
 		xmlhttp.send();
 
 

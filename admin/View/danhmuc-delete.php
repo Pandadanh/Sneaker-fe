@@ -5,18 +5,19 @@ if (!isset($_REQUEST['id'])) {
 	header('location: logout.php');
 	exit;
 } else {
-	// Check the id is valid or not
-	$statement = $pdo->prepare("SELECT * FROM tbl_danhmuc WHERE id_dm=?");
-	$statement->execute(array($_REQUEST['id']));
-	$total = $statement->rowCount();
-	if ($total == 0) {
-		header('location: logout.php');
-		exit;
-	}
+	
+	$data = array(
+		'id' => $_REQUEST['id']
+	);
+
+	$apiUrl = 'http://localhost:8080/api-admin/controller-danhmuc/delete';
+	$ch = curl_init($apiUrl);
+	curl_setopt($ch, CURLOPT_POST, 1);
+	curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+	curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+	$response = curl_exec($ch);
+	curl_close($ch);
+
+	header('location: ../Control/index.php?page=danhmuc&tc');
 }
-?>
-<?php
-$statement = $pdo->prepare("update tbl_danhmuc set daxoa=1 WHERE id_dm=?");
-$statement->execute(array($_REQUEST['id']));
-header('location: ../Control/index.php?page=danhmuc&tc');
 ?>

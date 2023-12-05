@@ -2,30 +2,35 @@
 <?php
 include('../Control/inc/config.php');
 if(isset($_POST['form1'])) {
-	$valid = 1;
 
     if(empty($_POST['nhanhieu'])) {
         $valid = 0;
         $error_message .= "Nhãn hiệu không được để trống<br>";
     } else {
-    	// Duplicate Category checking
-    	$statement = $pdo->prepare("SELECT * FROM tbl_nhanhieu WHERE id_nh=?");
-    	$statement->execute(array($_POST['nhanhieu']));
-    	$total = $statement->rowCount();
-    	if($total)
-    	{
-    		$valid = 0;
-        	$error_message .= "Nhãn hiệu đã tồn tại<br>";
-    	}
-    }
 
-    if($valid == 1) {
 
-		$statement = $pdo->prepare("INSERT INTO tbl_nhanhieu (nhanhieu) VALUES (?)");
-		$statement->execute(array($_POST['nhanhieu']));
+		$data = array(
+			'nhanhieunew' => $_POST['nhanhieu']
+		);
 	
-    	$success_message = 'Thêm Nhãn hiệu thành công.';
-    }
+		$apiUrl = 'http://localhost:8080/api-admin/controller-nhanhieu/add';
+		$ch = curl_init($apiUrl);
+		curl_setopt($ch, CURLOPT_POST, 1);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+		$response = curl_exec($ch);
+		curl_close($ch);
+		$responseData = json_decode($response, true);
+	
+		if ($responseData === null) {
+	
+			$error_message .= "Error<br>";
+		} else {
+			$success_message = 'Thêm Nhãn hiệu thành công.';
+		}
+
+
+	}
 }
 ?>
 

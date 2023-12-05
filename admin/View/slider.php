@@ -3,9 +3,24 @@
 		<h1>Sliders</h1>
 	</div>
 	<div class="content-header-right">
-		<a href="index.php?page=slider-add" class="btn btn-primary btn-sm">Add Slider</a>
+		<a href="index.php?page=slider-add" class="btn btn-primary btn-sm"  <?php ktne("slider-add", $quyen) ?> >Add Slider</a>
 	</div>
 </section>
+
+
+<?php
+if (ktne11("slider-xoa", $quyen) == false) {
+	$css = "#xoa { display: none}";
+	echo "<style>$css</style>";
+}
+if (ktne11("slider-sua", $quyen) == false) {
+	$css = "#sua { display: none}";
+	echo "<style>$css</style>";
+}
+
+?>
+
+?>
 
 <section class="content">
 	<div class="row">
@@ -69,7 +84,7 @@
 				document.getElementById("trang").innerHTML = inra[1];
 			}
 		}
-		xmlhttp.open("GET", "../Model/sliders-pt-tk.php?p=" + p, true);
+		xmlhttp.open("GET", "../Controllers/controller_sliders/controller_sliders-pt-tk.php?p=" + p, true);
 		xmlhttp.send();
 	}
 	window.onload = show(1);

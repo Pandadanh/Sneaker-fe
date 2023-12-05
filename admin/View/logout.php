@@ -1,7 +1,11 @@
 <?php 
 ob_start();
 include '../Control/inc/config.php'; 
-unset($_SESSION['user']);
+session_start();
+if (isset($_SESSION['user'])) {
+    unset($_SESSION['user']); // Nếu tồn tại, loại bỏ nó
+}
+
 ob_flush();
-header("location: ../../shop-giay/index.php"); 
+header("Location: /DOANWED/admin/View/login.php");
 ?>

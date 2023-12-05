@@ -1,4 +1,6 @@
 <?php
+require_once('../Database/Helper.php');
+
 if (!isset($_REQUEST['nhomquyen'])) {
 	header('location: ../View/logout.php');
 	exit;
@@ -28,18 +30,34 @@ if (isset($_POST['capquyen'])) {
 }
 function kttontai($quyen)
 {
-	$db = new Helper();
-	$statement = "SELECT quyen FROM tbl_phanquyen where nhomquyen=?";
-	$para = [$_REQUEST['nhomquyen']];
-	$result = $db->fetchAll($statement, $para);
-	foreach ($result as $q) {
-		if ($quyen == $q['quyen']) {
-			return true;
+	$api_url = 'http://localhost:8080/api-admin/controller-user-admin/checkbox-quyen?quyen=' . $quyen . '&nhomquyen=' . $_REQUEST['nhomquyen'];
+
+	$ch = curl_init($api_url);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	$response = curl_exec($ch);
+	curl_close($ch);
+	try {
+		$data = json_decode($response, true);
+
+		if ($data === null) {
+			throw new Exception('Lỗi khi chuyển đổi JSON thành mảng.');
 		}
+
+		if ($data['status'] === 'ok') {
+		
+			return true;
+		} else {
+			// Xử lý trường hợp trạng thái là 'fail' hoặc một trường hợp khác
+			return false;
+		}
+	} catch (Exception $e) {
+		// Xử lý trường hợp trạng thái là 'fail' hoặc một trường hợp khác
+		return false;
 	}
-	return false;
 }
+
 ?>
+
 <section class="content-header">
 	<div class="content-header-left">
 		<h1>Quản lý quyền</h1>
@@ -57,7 +75,7 @@ function kttontai($quyen)
 					<p><?php echo $success_message; ?></p>
 				</div>
 			<?php endif; ?>
-			<div class="box box-info" >
+			<div class="box box-info">
 				<div class="box-body">
 					<form method="post">
 						<div class="row" style="margin-left: 40px;">
@@ -85,7 +103,9 @@ function kttontai($quyen)
 							<div class="col-md-2">
 								<label for="">Cài đặt shop</label>
 								<div><input type="checkbox" name="quyen[]" <?php if (kttontai("cds-xem")) echo "checked" ?> value="cds-xem"> Xem</div>
+								<div><input type="checkbox" name="quyen[]" <?php if (kttontai("cds-them")) echo "checked" ?> value="cds-them"> Thêm</div>
 								<div><input type="checkbox" name="quyen[]" <?php if (kttontai("cds-sua")) echo "checked" ?> value="cds-sua"> Sửa</div>
+								<div><input type="checkbox" name="quyen[]" <?php if (kttontai("cds-xoa")) echo "checked" ?> value="cds-xoa"> Xóa</div>
 							</div>
 							<div class="col-md-2">
 								<label for="">Tài khoản</label>
@@ -115,7 +135,7 @@ function kttontai($quyen)
 								<label for="">Dashboard</label>
 								<div><input type="checkbox" name="quyen[]" <?php if (kttontai("dabo-xem")) echo "checked" ?> value="dabo-xem"> Xem</div>
 							</div>
-							
+
 						</div>
 						<div class="form-group mt-3 mb-2">
 							<label for="" class="col-sm-3 control-label"></label>

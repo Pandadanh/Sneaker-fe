@@ -85,18 +85,7 @@ if(isset($_POST['form1'])) {
 								<input type="file" name="photo">(Only jpg, jpeg, gif and png are allowed)
 							</div>
 						</div>
-						<!-- <div class="form-group">
-							<label for="" class="col-sm-2 control-label">Heading </label>
-							<div class="col-sm-6">
-								<input type="text" autocomplete="off" class="form-control" name="heading" value="<?php if(isset($_POST['heading'])){echo $_POST['heading'];} ?>">
-							</div>
-						</div>
-						<div class="form-group">
-							<label for="" class="col-sm-2 control-label">Content </label>
-							<div class="col-sm-6">
-								<textarea class="form-control" name="content" style="height:140px;"><?php if(isset($_POST['content'])){echo $_POST['content'];} ?></textarea>
-							</div>
-						</div> -->
+						
 						<div class="form-group">
 							<label for="" class="col-sm-2 control-label"></label>
 							<div class="col-sm-6">

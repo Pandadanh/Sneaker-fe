@@ -1,5 +1,7 @@
 <?php
 //Change Logo
+
+
 if (isset($_POST['form1'])) {
     $valid = 1;
 
@@ -19,22 +21,32 @@ if (isset($_POST['form1'])) {
     }
 
     if ($valid == 1) {
-        // removing the existing photo
-        $statement = $pdo->prepare("SELECT * FROM tbl_setting WHERE id=1");
-        $statement->execute();
-        $result = $statement->fetchAll(PDO::FETCH_ASSOC);
-        foreach ($result as $row) {
-            $logo = $row['logo'];
-            unlink('../../uploads/' . $logo);
-        }
+        $apiUrl = 'http://localhost:8080/api-admin/controller-setting/show';
+        $curl = curl_init($apiUrl);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        $response = curl_exec($curl);
+        curl_close($curl);
+        $data = json_decode($response, true);
 
+        
+        $logo = $data['data']['logo'];
+        unlink('../../uploads/' . $logo);
         // updating the data
         $final_name = 'logo' . '.' . $ext;
         move_uploaded_file($path_tmp, '../../uploads/' . $final_name);
-
         // updating the database
-        $statement = $pdo->prepare("UPDATE tbl_setting SET logo=? WHERE id=1");
-        $statement->execute(array($final_name));
+
+        $api_url = 'http://localhost:8080/api-admin/controller-setting/update-page';
+        $image_path = '/path/to/your/image.jpg';
+        $curl = curl_init($api_url);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_POST, true);
+        $data = array(
+            'filename_logo' =>array($final_name)
+        );
+        curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
+        $response = curl_exec($curl);
+        curl_close($curl);
 
         $success_message = 'Logo is updated successfully.';
     }
@@ -59,22 +71,26 @@ if (isset($_POST['form2'])) {
     }
 
     if ($valid == 1) {
-        // removing the existing photo
-        $statement = $pdo->prepare("SELECT * FROM tbl_setting WHERE id=1");
-        $statement->execute();
-        $result = $statement->fetchAll(PDO::FETCH_ASSOC);
-        foreach ($result as $row) {
-            $favicon = $row['favicon'];
+       
+            $favicon = $data['data']['favicon'];
             unlink('../../uploads/' . $favicon);
-        }
-
+        
         // updating the data
         $final_name = 'favicon' . '.' . $ext;
         move_uploaded_file($path_tmp, '../../uploads/' . $final_name);
 
         // updating the database
-        $statement = $pdo->prepare("UPDATE tbl_setting SET favicon=? WHERE id=1");
-        $statement->execute(array($final_name));
+        $api_url = 'http://localhost:8080/api-admin/controller-setting/update-page';
+        $image_path = '/path/to/your/image.jpg';
+        $curl = curl_init($api_url);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_POST, true);
+        $data = array(
+            'filename_favicon' =>array($final_name)
+        );
+        curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
+        $response = curl_exec($curl);
+        curl_close($curl);
 
         $success_message = 'Favicon is updated successfully.';
     }
@@ -82,21 +98,25 @@ if (isset($_POST['form2'])) {
 //Footer & Contact us page
 if (isset($_POST['form3'])) {
 
-    // updating the database
-    $statement = $pdo->prepare("UPDATE tbl_setting SET  footer_copyright=?, contact_address=?, contact_email=?, contact_phone=?, contact_map_iframe=? WHERE id=1");
-    $statement->execute(array($_POST['footer_copyright'], $_POST['contact_address'], $_POST['contact_email'], $_POST['contact_phone'], $_POST['contact_map_iframe']));
+        // updating the database
+        $api_url = 'http://localhost:8080/api-admin/controller-setting/update-page';
+        $image_path = '/path/to/your/image.jpg';
+        $curl = curl_init($api_url);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_POST, true);
+        $data = array(
+            'footer_copyright' =>$_POST['footer_copyright'],
+            'contact_address' =>$_POST['contact_address'],
+            'footer_copyright' =>$_POST['footer_copyright'],
+            'contact_email' =>$_POST['contact_email'],
+            'contact_map_iframe' =>$_POST['contact_map_iframe']
 
+        );
+        curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
+        $response = curl_exec($curl);
+        curl_close($curl);
     $success_message = 'General content settings is updated successfully.';
 }
-//Email Settings
-// if (isset($_POST['form4'])) {   
-//     // updating the database
-//     $statement = $pdo->prepare("UPDATE tbl_setting SET  receive_email_subject=?,receive_email_thank_you_message=?, forget_password_message=? WHERE id=1");
-//     $statement->execute(array($_POST['receive_email'], $_POST['receive_email_subject'], $_POST['receive_email_thank_you_message'], $_POST['forget_password_message']));
-
-//     $success_message = 'Contact form settings information is updated successfully.';
-// }
-
 ?>
 
 <section class="content-header">
@@ -106,20 +126,24 @@ if (isset($_POST['form3'])) {
 </section>
 
 <?php
-$statement = $pdo->prepare("SELECT * FROM tbl_setting WHERE id=1");
-$statement->execute();
-$result = $statement->fetchAll(PDO::FETCH_ASSOC);
-foreach ($result as $row) {
-    $logo                            = $row['logo'];
-    $favicon                         = $row['favicon'];
-    $footer_about                    = $row['footer_about'];
-    $footer_copyright                = $row['footer_copyright'];
-    $contact_address                 = $row['contact_address'];
-    $contact_email                   = $row['contact_email'];
-    $contact_phone                   = $row['contact_phone'];
-    $contact_map_iframe              = $row['contact_map_iframe'];
-}
+$apiUrl = 'http://localhost:8080/api-admin/controller-setting/show';
+$curl = curl_init($apiUrl);
+curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+$response = curl_exec($curl);
+curl_close($curl);
+$data = json_decode($response, true);
+
+
+$logo                            = $data['data']['logo'];
+$favicon                         = $data['data']['favicon'];
+$footer_about                    = $data['data']['footerAbout'];
+$footer_copyright                = $data['data']['footerCopyright'];
+$contact_address                 = $data['data']['contactAddress'];
+$contact_email                   = $data['data']['contactEmail'];
+$contact_phone                   = $data['data']['contactPhone'];
+$contact_map_iframe              = $data['data']['contactMapIframe'];
 ?>
+
 
 <section class="content" style="min-height:auto;margin-bottom: -30px;">
     <div class="row">
@@ -151,7 +175,6 @@ foreach ($result as $row) {
                 <ul class="nav nav-tabs">
                     <li class="active"><a href="#tab_1" data-toggle="tab">Logo</a></li>
                     <li><a href="#tab_2" data-toggle="tab">Favicon</a></li>
-                    <li><a href="#tab_3" data-toggle="tab">Footer & Contact</a></li>
                 </ul>
                 <div class="tab-content">
                     <div class="tab-pane active" id="tab_1">

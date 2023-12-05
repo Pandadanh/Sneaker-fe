@@ -1352,3 +1352,16 @@ form div span:hover {
     background-color: #ccc;
     text-decoration: none;
   }
+
+
+  .icon-container {
+    display: flex;
+    justify-content: center;
+  }
+
+  .icon-container img {
+    border-radius: 50%;
+    width: 14%;
+    height: 14%;
+    margin: 10px;
+  }

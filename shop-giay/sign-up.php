@@ -1,14 +1,3 @@
-<?php
-
-// if(isset($_GET['btn-sign-up'])){
-
-//     header("Location: index.php?page=sign-up");
-
-// }
-
-?>
-
-
 <style>
   .form-group label {
     font-weight: 500;
@@ -66,10 +55,10 @@
     <div class="row">
       <div class="col-md-8 m-auto">
         <h1 class="text-center">Đăng ký</h1>
-        <form action="" class="form" id="form-1">
+        <form action="controllers/controller_sign_up.php" class="form" id="form-1" method="POST">
           <div class="form-group form-group-username">
             <label for="username">Họ tên</label>
-            <input type="text" name="username" id="username" class="form-control" placeholder="Họ tên" />
+            <input type="text" name="ten_user" id="ten_user" class="form-control" placeholder="Họ tên" />
             <small class="form-message form-message-username"></small>
           </div>
           <div class="form-group form-group-email">
@@ -79,22 +68,29 @@
           </div>
           <div class="form-group form-group-sdt">
             <label for="sdt">Số điện thoại</label>
-            <input type="text" name="sdt" id="sdt" class="form-control" placeholder="Số điện thoại" />
+            <input type="text" name="sodth" id="sodth" class="form-control" placeholder="Số điện thoại" />
             <small class="form-message form-message-sdt"></small>
           </div>
+          <div id="email-result" class="result-message"></div>
+
+
           <div class="form-group form-group-diaChi">
             <label for="diaChi">Địa chỉ</label>
             <input type="text" name="diaChi" id="diaChi" class="form-control" placeholder="Địa chỉ" />
             <small class="form-message form-message-diaChi"></small>
           </div>
+
+
           <div class="form-group form-group-password">
             <label for="password">Mật khẩu</label>
             <div class="sub-form">
-              <input type="password" name="password" id="password" class="form-control" placeholder="Mật khẩu" />
+              <input type="password" name="matKhau" id="matKhau" class="form-control" placeholder="Mật khẩu" />
               <i class="fa-solid fa-eye icon-eye"></i>
             </div>
             <small class="form-message form-message-password"></small>
           </div>
+
+
           <div class="form-group form-group-password-confirm">
             <label for="password-confirm">Nhập lại mật khẩu</label>
             <div class="sub-form">
@@ -103,6 +99,8 @@
             </div>
             <small class="form-message form-message-password-confirm"></small>
           </div>
+
+
           <input type="submit" name="btn-sign-up" id="btn-sign-up" class="btn btn-info w-100 mt-4 mb-2" value="Đăng ký"></input>
           <small id="form-message-error"></small>
           <small id="form-message-success"></small>
@@ -115,451 +113,143 @@
     </div>
   </div>
 </div>
-<a href=""></a>
-<?php
-  require('email.php');
-  // echo send_mail('lddtan5@gmail.com','Lê Đức Duy Tân_A0694', 'Kích hoạt tài khoản', '<a href="http://unitop.vn">Kích hoạt tài khoản</a>');
 
-?>
-
-<!-- <script src="assets/js/validator.js"></script>
-<script>
-  Validator({
-    form: "#form-1",
-    formGroupSelector: ".form-group",
-    errorSelector: ".form-message",
-    rules: [
-      Validator.isRequired("#username"),
-      Validator.isRequired("#email"),
-      Validator.isEmail("#email"),
-      Validator.isRequired("#password"),
-      Validator.minLength("#password", 6),
-      Validator.isRequired("#password-comfirmation"),
-      Validator.isComfirmed(
-        "#password-comfirmation",
-        function() {
-          return document.querySelector("#form-1 #password").value;
-        },
-        "Mật khẩu nhập lại không chính xác"
-      ),
-    ],
-    // onSubmit: function (data) {
-    //   // call API
-    //   console.log(data);
-    // },
-  });
-</script> -->
 
 <script>
-  $(document).ready(function() {
-    $(".icon-eye").click(function() {
-      $(this).toggleClass("fa-eye-slash");
-      $(this).toggleClass("fa-eye");
-      if ($(this).hasClass("fa-eye-slash")) {
-        $(this).prev("#password").attr('type', 'text');
-        $(this).prev("#password-confirm").attr('type', 'text');
-      } else {
-        $(this).prev("#password").attr('type', 'password');
-        $(this).prev("#password-confirm").attr('type', 'password');
-      }
-    })
+$("#email").on("input", function () {
+    const email = $(this).val();
+    const errorMessageElement = $(".form-message-email");
+    const resultMessageElement = $("#email-result");
 
-    $("#username").blur(function() {
-      var username = $("#username").val();
-      var email = $("#email").val();
-      var sdt = $("#sdt").val();
-      var diaChi = $("#diaChi").val();
-      var password = $("#password").val();
-      var password_confirm = $("#password-confirm").val();
-      var data = {
-        username: username,
-        email: email,
-        sdt: sdt,
-        diaChi: diaChi,
-        password: password,
-        password_confirm: password_confirm,
-      };
-      // console.log(data);
-      $.ajax({
-        url: "check-sign-up-ajax.php", // Trang xử lý, mặc định trang hiện tại
-        method: "POST", // POST hoặc GET, mặc định GET
-        data: data, // Dữ liệu truyền lên server
-        dataType: "json", // html, text, script hoặc json
-        success: function(data) {
-          if (data.error.username != null) {
-            $(".form-group-username").addClass("invalid");
-            $(".form-message-username").text(data.error.username);
-          } else {
-            $(".form-group-username").removeClass("invalid");
-            $(".form-message-username").text("");
-          }
+    if (isEmailValid(email)) {
+        errorMessageElement.text("");
+        errorMessageElement.css("color", "green");
 
-          $("#username").focus(function() {
-            $(this).parents(".form-group-username").removeClass("invalid");
-            $(this).next(".form-message-username").text("");
-            $("#form-message-error").text("");
-            $("#form-message-success").text("");
-          })
-        },
-        error: function(xhr, ajaxOptions, thrownError) {
-          alert(xhr.status);
-          alert(thrownError);
-        },
-      });
-    })
-
-    $("#email").blur(function() {
-      var username = $("#username").val();
-      var email = $("#email").val();
-      var sdt = $("#sdt").val();
-      var diaChi = $("#diaChi").val();
-      var password = $("#password").val();
-      var password_confirm = $("#password-confirm").val();
-      var data = {
-        username: username,
-        email: email,
-        sdt: sdt,
-        diaChi: diaChi,
-        password: password,
-        password_confirm: password_confirm,
-      };
-      // console.log(data);
-      $.ajax({
-        url: "check-sign-up-ajax.php", // Trang xử lý, mặc định trang hiện tại
-        method: "POST", // POST hoặc GET, mặc định GET
-        data: data, // Dữ liệu truyền lên server
-        dataType: "json", // html, text, script hoặc json
-        success: function(data) {
-          if (data.error.email != null) {
-            $(".form-group-email").addClass("invalid");
-            $(".form-message-email").text(data.error.email);
-          } else {
-            $(".form-group-email").removeClass("invalid");
-            $(".form-message-email").text("");
-          }
-
-          $("#email").focus(function() {
-            $(this).parents(".form-group-email").removeClass("invalid");
-            $(this).next(".form-message-email").text("");
-            $("#form-message-error").text("");
-            $("#form-message-success").text("");
-          })
-        },
-        error: function(xhr, ajaxOptions, thrownError) {
-          alert(xhr.status);
-          alert(thrownError);
-        },
-      });
-    })
-
-    $("#sdt").blur(function() {
-      var username = $("#username").val();
-      var email = $("#email").val();
-      var sdt = $("#sdt").val();
-      var diaChi = $("#diaChi").val();
-      var password = $("#password").val();
-      var password_confirm = $("#password-confirm").val();
-      var data = {
-        username: username,
-        email: email,
-        sdt: sdt,
-        diaChi: diaChi,
-        password: password,
-        password_confirm: password_confirm,
-      };
-      // console.log(data);
-      $.ajax({
-        url: "check-sign-up-ajax.php", // Trang xử lý, mặc định trang hiện tại
-        method: "POST", // POST hoặc GET, mặc định GET
-        data: data, // Dữ liệu truyền lên server
-        dataType: "json", // html, text, script hoặc json
-        success: function(data) {
-          if (data.error.sdt != null) {
-            $(".form-group-sdt").addClass("invalid");
-            $(".form-message-sdt").text(data.error.sdt);
-          } else {
-            $(".form-group-sdt").removeClass("invalid");
-            $(".form-message-sdt").text("");
-          }
-
-          $("#sdt").focus(function() {
-            $(this).parents(".form-group-sdt").removeClass("invalid");
-            $(this).next(".form-message-sdt").text("");
-            $("#form-message-error").text("");
-            $("#form-message-success").text("");
-          })
-        },
-        error: function(xhr, ajaxOptions, thrownError) {
-          alert(xhr.status);
-          alert(thrownError);
-        },
-      });
-    })
-
-    $("#diaChi").blur(function() {
-      var username = $("#username").val();
-      var email = $("#email").val();
-      var sdt = $("#sdt").val();
-      var diaChi = $("#diaChi").val();
-      var password = $("#password").val();
-      var password_confirm = $("#password-confirm").val();
-      var data = {
-        username: username,
-        email: email,
-        sdt: sdt,
-        diaChi: diaChi,
-        password: password,
-        password_confirm: password_confirm,
-      };
-      // console.log(data);
-      $.ajax({
-        url: "check-sign-up-ajax.php", // Trang xử lý, mặc định trang hiện tại
-        method: "POST", // POST hoặc GET, mặc định GET
-        data: data, // Dữ liệu truyền lên server
-        dataType: "json", // html, text, script hoặc json
-        success: function(data) {
-          if (data.error.diaChi != null) {
-            $(".form-group-diaChi").addClass("invalid");
-            $(".form-message-diaChi").text(data.error.diaChi);
-          } else {
-            $(".form-group-diaChi").removeClass("invalid");
-            $(".form-message-diaChi").text("");
-          }
-
-          $("#diaChi").focus(function() {
-            $(this).parents(".form-group-diaChi").removeClass("invalid");
-            $(this).next(".form-message-diaChi").text("");
-            $("#form-message-error").text("");
-            $("#form-message-success").text("");
-          })
-        },
-        error: function(xhr, ajaxOptions, thrownError) {
-          alert(xhr.status);
-          alert(thrownError);
-        },
-      });
-    })
-
-    $("#password").blur(function() {
-      var username = $("#username").val();
-      var email = $("#email").val();
-      var sdt = $("#sdt").val();
-      var diaChi = $("#diaChi").val();
-      var password = $("#password").val();
-      var password_confirm = $("#password-confirm").val();
-      var data = {
-        username: username,
-        email: email,
-        sdt: sdt,
-        diaChi: diaChi,
-        password: password,
-        password_confirm: password_confirm,
-      };
-      // console.log(data);
-      $.ajax({
-        url: "check-sign-up-ajax.php", // Trang xử lý, mặc định trang hiện tại
-        method: "POST", // POST hoặc GET, mặc định GET
-        data: data, // Dữ liệu truyền lên server
-        dataType: "json", // html, text, script hoặc json
-        success: function(data) {
-          if (data.error.password != null) {
-            $(".form-group-password").addClass("invalid");
-            $(".form-message-password").text(data.error.password);
-          } else {
-            $(".form-group-password").removeClass("invalid");
-            $(".form-message-password").text("");
-          }
-
-          $("#password").focus(function() {
-            $(this).parents(".sub-form").parents(".form-group-password").removeClass("invalid");
-            $(this).parents(".sub-form").nextAll(".form-message-password").text("");
-            $("#form-message-error").text("");
-            $("#form-message-success").text("");
-          })
-        },
-        error: function(xhr, ajaxOptions, thrownError) {
-          alert(xhr.status);
-          alert(thrownError);
-        },
-      });
-    })
-
-    $("#password-confirm").blur(function() {
-      var username = $("#username").val();
-      var email = $("#email").val();
-      var sdt = $("#sdt").val();
-      var diaChi = $("#diaChi").val();
-      var password = $("#password").val();
-      var password_confirm = $("#password-confirm").val();
-      var data = {
-        username: username,
-        email: email,
-        sdt: sdt,
-        diaChi: diaChi,
-        password: password,
-        password_confirm: password_confirm,
-      };
-      // console.log(data);
-      $.ajax({
-        url: "check-sign-up-ajax.php", // Trang xử lý, mặc định trang hiện tại
-        method: "POST", // POST hoặc GET, mặc định GET
-        data: data, // Dữ liệu truyền lên server
-        dataType: "json", // html, text, script hoặc json
-        success: function(data) {
-          if (data.error.password_confirm != null) {
-            $(".form-group-password-confirm").addClass("invalid");
-            $(".form-message-password-confirm").text(data.error.password_confirm);
-          } else {
-            $(".form-group-password-confirm").removeClass("invalid");
-            $(".form-message-password-confirm").text("");
-          }
-
-          $("#password-confirm").focus(function() {
-            $(this).parents(".sub-form").parents(".form-group-password-confirm").removeClass("invalid");
-            $(this).parents(".sub-form").nextAll(".form-message-password-confirm").text("");
-            $("#form-message-error").text("");
-            $("#form-message-success").text("");
-          })
-        },
-        error: function(xhr, ajaxOptions, thrownError) {
-          alert(xhr.status);
-          alert(thrownError);
-        },
-      });
-    })
-
-    $("#form-1").submit(function(e) {
-      var username = $("#username").val();
-      var email = $("#email").val();
-      var sdt = $("#sdt").val();
-      var diaChi = $("#diaChi").val();
-      var password = $("#password").val();
-      var password_confirm = $("#password-confirm").val();
-      var btnSignUp = $("#btn-sign-up").val();
-      var data = {
-        username: username,
-        email: email,
-        sdt: sdt,
-        diaChi: diaChi,
-        password: password,
-        password_confirm: password_confirm,
-        btnSignUp: btnSignUp
-      };
-      // console.log(data);
-      $.ajax({
-        url: "check-sign-up-ajax.php", // Trang xử lý, mặc định trang hiện tại
-        method: "POST", // POST hoặc GET, mặc định GET
-        data: data, // Dữ liệu truyền lên server
-        dataType: "json", // html, text, script hoặc json
-        success: function(data) {
-          if (data.error.username != null) {
-            $(".form-group-username").addClass("invalid");
-            $(".form-message-username").text(data.error.username);
-          } else {
-            $(".form-group-username").removeClass("invalid");
-            $(".form-message-username").text("");
-          }
-
-          if (data.error.email != null) {
-            $(".form-group-email").addClass("invalid");
-            $(".form-message-email").text(data.error.email);
-          } else {
-            $(".form-group-email").removeClass("invalid");
-            $(".form-message-email").text("");
-          }
-
-          if (data.error.sdt != null) {
-            $(".form-group-sdt").addClass("invalid");
-            $(".form-message-sdt").text(data.error.sdt);
-          } else {
-            $(".form-group-sdt").removeClass("invalid");
-            $(".form-message-sdt").text("");
-          }
-
-          if (data.error.diaChi != null) {
-            $(".form-group-diaChi").addClass("invalid");
-            $(".form-message-diaChi").text(data.error.diaChi);
-          } else {
-            $(".form-group-diaChi").removeClass("invalid");
-            $(".form-message-diaChi").text("");
-          }
-
-          if (data.error.password != null) {
-            $(".form-group-password").addClass("invalid");
-            $(".form-message-password").text(data.error.password);
-          } else {
-            $(".form-group-password").removeClass("invalid");
-            $(".form-message-password").text("");
-          }
-
-          if (data.error.password_confirm != null) {
-            $(".form-group-password-confirm").addClass("invalid");
-            $(".form-message-password-confirm").text(data.error.password_confirm);
-          } else {
-            $(".form-group-password-confirm").removeClass("invalid");
-            $(".form-message-password-confirm").text("");
-          }
-
-          $("#username").focus(function() {
-            $(this).parents(".form-group-username").removeClass("invalid");
-            $(this).next(".form-message-username").text("");
-            $("#form-message-error").text("");
-            $("#form-message-success").text("");
-          })
-
-          $("#email").focus(function() {
-            $(this).parents(".form-group-email").removeClass("invalid");
-            $(this).next(".form-message-email").text("");
-            $("#form-message-error").text("");
-            $("#form-message-success").text("");
-          })
-
-          $("#sdt").focus(function() {
-            $(this).parents(".form-group-sdt").removeClass("invalid");
-            $(this).next(".form-message-sdt").text("");
-            $("#form-message-error").text("");
-            $("#form-message-success").text("");
-          })
-
-          $("#diaChi").focus(function() {
-            $(this).parents(".form-group-diaChi").removeClass("invalid");
-            $(this).next(".form-message-diaChi").text("");
-            $("#form-message-error").text("");
-            $("#form-message-success").text("");
-          })
-
-          $("#password").focus(function() {
-            $(this).parents(".sub-form").parents(".form-group-password").removeClass("invalid");
-            $(this).parents(".sub-form").nextAll(".form-message-password").text("");
-            $("#form-message-error").text("");
-            $("#form-message-success").text("");
-          })
-
-          $("#password-confirm").focus(function() {
-            $(this).parents(".sub-form").parents(".form-group-password-confirm").removeClass("invalid");
-            $(this).parents(".sub-form").nextAll(".form-message-password-confirm").text("");
-            $("#form-message-error").text("");
-            $("#form-message-success").text("");
-          })
-
-
-
-          if (data.error == "") {
-            if (data.is_sign_up == 1) {
-              $("#form-message-success").text(data.message);
-            } else {
-              $("#form-message-error").text(data.message);
+        // Gửi yêu cầu kiểm tra email bằng AJAX
+        $.ajax({
+            url: "/check-email", // Đổi thành địa chỉ API của bạn
+            method: "POST",
+            data: { email: email },
+            success: function (response) {
+                if (response.valid) {
+                    resultMessageElement.text("Email hợp lệ.");
+                    resultMessageElement.css("color", "green");
+                } else {
+                    resultMessageElement.text("Email đã tồn tại.");
+                    resultMessageElement.css("color", "red");
+                }
             }
-          }
+        });
+    } else {
+        errorMessageElement.text("Email không hợp lệ.");
+        errorMessageElement.css("color", "red");
+        resultMessageElement.text(""); // Xóa kết quả trước đó nếu email không hợp lệ
+    }
+});
+
+function isEmailValid(email) {
+    // Thực hiện kiểm tra email ở đây (giống như trong ví dụ trước)
+    const emailPattern = /^[a-zA-Z0-9._%+-]+@gmail.com$/;
+    return emailPattern.test(email);
+}
 
 
-        },
-        error: function(xhr, ajaxOptions, thrownError) {
-          alert(xhr.status);
-          alert(thrownError);
-        },
-      });
-      e.preventDefault();
+// Kiểm tra mật khẩu
+$("#matKhau, #password-confirm").on("input", function () {
+    const password = $("#matKhau").val();
+    const confirmPassword = $("#password-confirm").val();
+    const passwordMessageElement = $(".form-message-password");
+    const passwordConfirmMessageElement = $(".form-message-password-confirm");
+
+
+    if (password.length < 5) {
+        passwordMessageElement.text("Mật khẩu phải có ít nhất 5 ký tự.");
+        passwordMessageElement.css("color", "red");
+    } else {
+        passwordMessageElement.text("");
+    }
+
+    if (password !== confirmPassword) {
+      passwordConfirmMessageElement.text("Mật khẩu không trùng khớp.");
+      passwordConfirmMessageElement.css("color", "red");
+    }
+    else {
+      passwordConfirmMessageElement.text("");
+    }
+});
+
+// Kiểm tra số điện thoại
+$("#sodth").on("input", function () {
+    const sdt = $(this).val();
+    const sdtMessageElement = $(".form-message-sdt");
+    const sdtResultElement = $("#sodth-result");
+
+    if (/^0[0-9]{9}$/.test(sdt)) {
+        sdtMessageElement.text("");
+        sdtResultElement.text("Số điện thoại hợp lệ.");
+        sdtResultElement.css("color", "green");
+    } else {
+        sdtMessageElement.text("Số điện thoại không hợp lệ.");
+        sdtMessageElement.css("color", "red");
+        sdtResultElement.text("");
+    }
+});
+
+$(document).ready(function () {
+    $("form").submit(function (event) {
+        event.preventDefault(); // Ngăn chặn gửi form mặc định
+        
+        // Kiểm tra họ tên
+        const tenUser = $("#ten_user").val();
+        if (tenUser.trim() === "") {
+            alert("Vui lòng nhập họ tên.");
+            return;
+        }
+
+        // Kiểm tra email
+        const email = $("#email").val();
+        if (!isEmailValid(email)) {
+            alert("Email không hợp lệ.");
+            return;
+        }
+
+        // Kiểm tra số điện thoại
+        const sdt = $("#sodth").val();
+        if (!/^0[0-9]{9}$/.test(sdt)) {
+            alert("Số điện thoại không hợp lệ.");
+            return;
+        }
+
+        // Kiểm tra số điện thoại
+        const diaChi = $("#diaChi").val();
+        if (diaChi  .trim() === "") {
+            alert("Vui lòng nhập địa chỉ.");
+            return;
+        }
+
+        // Kiểm tra mật khẩu
+        const matKhau = $("#matKhau").val();
+        const confirmPassword = $("#password-confirm").val();
+        if (matKhau.length < 5) {
+            alert("Mật khẩu phải có ít nhất 5 ký tự.");
+            return;
+        }
+        if (matKhau !== confirmPassword) {
+            alert("Mật khẩu không trùng khớp.");
+            return;
+        }
+
+        // Nếu không có lỗi, bạn có thể gửi form tại đây
+        $(this).unbind("submit").submit();
     });
-  })
+
+    // Kiểm tra email hợp lệ
+    function isEmailValid(email) {
+        const emailPattern = /^[a-zA-Z0-9._%+-]+@gmail.com$/;
+        return emailPattern.test(email);
+    }
+});
+
+
 </script>
+

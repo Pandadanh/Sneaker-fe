@@ -1,4 +1,7 @@
 <?php
+$error_message = '';
+$success_message = '';
+
 if (isset($_POST['form1'])) {
 	$valid = 1;
 
@@ -34,15 +37,16 @@ if (isset($_POST['form1'])) {
 		}
 	}
 	if ($valid == 1) {
+		
 		if ($path == '') {
+			
 			$statement = $pdo->prepare("UPDATE tbl_product SET 
         							ten_pro=?, 
 									id_nh=?, 
 									id_dm=?, 
         							giacu=?, 
         							giamoi=?,
-        							mota=?,
-        							pro_new=?
+        							mota=?
         							WHERE id_pro=?");
 			$statement->execute(array(
 				$_POST['ten_pro'],
@@ -51,7 +55,6 @@ if (isset($_POST['form1'])) {
 				$_POST['giacu'],
 				$_POST['giamoi'],
 				$_POST['mota'],
-				$_POST['pro_new'],
 				$_REQUEST['id']
 			));
 		} else {
@@ -69,8 +72,7 @@ if (isset($_POST['form1'])) {
         							giacu=?, 
         							giamoi=?, 
         							hinhanh=?,
-        							mota=?,     							
-        							pro_new=?
+        							mota=?     							
         							WHERE id_pro=?");
 			$statement->execute(array(
 				$_POST['ten_pro'],
@@ -80,7 +82,6 @@ if (isset($_POST['form1'])) {
 				$_POST['giamoi'],
 				$final_name,
 				$_POST['mota'],
-				$_POST['pro_new'],
 				$_REQUEST['id']
 			));
 		}
@@ -126,7 +127,6 @@ foreach ($result as $row) {
 	$giamoi = $row['giamoi'];
 	$mota = $row['mota'];
 	$hinhanh = $row['hinhanh'];
-	$pro_new = $row['pro_new'];
 }
 ?>
 <section class="content">

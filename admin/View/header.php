@@ -16,27 +16,9 @@ if (!isset($_SESSION['user'])) {
 }
 ?>
 <?php
-// include("../Database/PhanQuyen.php");
-include('../Database/Helper.php');
-$quyen = array();
-$db = new Helper();
-$statement = "SELECT * FROM tbl_phanquyen join tbl_users on tbl_users.nhomquyen =tbl_phanquyen.nhomquyen WHERE id_user=? ";
-$para = [$_SESSION['user']['id_user']];
-$result = $db->fetchAll($statement, $para);
-foreach ($result as $row) {
-	array_push($quyen, $row['quyen']);
-}
-function ktne($q, $quyen)
-{
-	if (in_array($q, $quyen)) {
-		echo "style='display:block'";
-	} else {
-		echo "style='display:none'";
-	}
-}
-$db = new Helper();
-$statement = "SELECT * FROM tbl_setting where id=1";
-$result1 = $db->fetchOne($statement);
+ include("../Database/KiemTraQuyen.php");
+
+$result1 = null;
 ?>
 <!DOCTYPE html>
 <html>
@@ -89,7 +71,7 @@ $result1 = $db->fetchOne($statement);
 						<li class="dropdown user user-menu">
 							<a href="#" class="dropdown-toggle" data-toggle="dropdown">
 								<img src="../../uploads/<?php echo $_SESSION['user']['avatar'];  ?>" class="user-image" alt="User Image" style="border-radius:100%">
-								<span class="hidden-xs"><?php echo $_SESSION['user']['ten_user']; ?></span>
+								<span class="hidden-xs"><?php echo $_SESSION['user']['tenUser']; ?></span>
 							</a>
 							<ul class="dropdown-menu">
 								<li class="user-footer">
@@ -97,7 +79,8 @@ $result1 = $db->fetchOne($statement);
 										<a href="index.php?page=profile-edit" class="btn btn-default btn-flat">Edit Profile</a>
 									</div>
 									<div>
-										<a href="../View/logout.php" class="btn btn-default btn-flat">Log out</a>
+									
+										<a href="/DOANWED/admin/View/logout.php" class="btn btn-default btn-flat">Log out</a>
 									</div>
 								</li>
 							</ul>
@@ -148,6 +131,7 @@ $result1 = $db->fetchOne($statement);
 							<li class="<?php if ($cur_page == 'danhmuc') echo 'active' ?>"><a href="index.php?page=danhmuc"><i class="fa fa-circle-o"></i> Danh Mục</a></li>
 							<li class="<?php if ($cur_page == 'nhacungcap') echo 'active' ?>"><a href="index.php?page=nhacungcap"><i class="fa fa-circle-o"></i> Nhà Cung Cấp</a></li>
 
+
 						</ul>
 					</li>
 
@@ -197,7 +181,7 @@ $result1 = $db->fetchOne($statement);
 
 					<li class="treeview <?php if (($cur_page == 'quyen') || ($cur_page == 'quyen-add') || ($cur_page == 'quyen-edit')) {
 											echo 'active';
-										} ?>" <?php if ($_SESSION['user']['nhomquyen'] != "Admin") echo "style='display:none;'" ?>>
+										} ?>" <?php if ($_SESSION['user']['nhomQuyen']['nhomquyen']!= "Admin") echo "style='display:none;'" ?>>
 						<a href="index.php?page=quyen">
 							<i class="fa fa-shield"></i> <span>QL Quyền</span>
 						</a>

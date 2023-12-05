@@ -32,7 +32,26 @@
         window.history.replaceState(null, null, window.location.href);
     }
 </script>
+
+
+
+
+
+
+
 <?php
+session_start();
+$check_quyen =  $_SESSION['user']['nhomQuyen']['nhomquyen'];
+if ($check_quyen == "Admin" || $check_quyen == "Nhân viên" || $check_quyen == "Quản lý") {
+  
+} else {
+    echo "<script type='text/javascript'>alert('Tài khoản của bạn không có quyền truy cập');</script>";
+    echo "<meta http-equiv='refresh' content='0;url=../View/login.php'>";
+}   
+
+// print_r($_SESSION);
+
+require_once("../Database/Helper.php");
 require_once("../View/header.php");
 ob_start();
 if (isset($_GET["page"])) {

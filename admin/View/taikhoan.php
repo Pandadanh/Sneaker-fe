@@ -11,27 +11,20 @@
 				<div class="box-body table-responsive">
 					<div class="wrap col-md-12">
 						<div class="m-5 ">
-							<form class="text-center">
+							<form class="text-center ">
 								Search <input type="text" id="search" placeholder="ID or Name" style="margin-right: 30px; height: 25px;">
-								Nhóm quyền <select name="" id="nhomquyen" style="margin-right: 30px; height: 25px;">
-									<option value="">Tất cả</option>
-									<?php
-									$db = new Helper();
-									$stmt = "select * from tbl_nhomquyen where daxoa=0";
-									$result = $db->fetchAll($stmt);
-									foreach ($result as $row) {
-									?>
-										<option value="<?php echo $row['nhomquyen'] ?>"><?php echo $row['nhomquyen'] ?></option>
-									<?php
-									}
-									?>
-								</select>
 								Trạng thái <select name="trangthaihd" id="trangthaihd" style="margin-right: 30px; height: 25px;">
 									<option value="">Tất cả</option>
 									<option value="0">Hoạt động</option>
-									<option value="1">Bị khóa</option>
+									<option value="1">Bị khóa</option>  
 								</select>
-								<input type="button" value="Tim" id="tim" onclick="show(1)">
+								Loại Tài Khoản <select name="trangthaihd" id="loaitk" style="margin-right: 30px; height: 25px;">
+									<option value="">Tất cả</option>
+									<option value="1">Khách Hàng</option>
+									<option value="2">Quản Trị Viên</option>
+								</select>
+									Số Dòng / Trang <input type="number" value="5" onchange="show(1)" id="sodong" style="height: 30px; width: 50px;">
+								<input type="button" value="Tìm" id="tim" onclick="show(1) " style="height: 30px; width: 50px; margin-left: 20px;">
 							</form>
 						</div>
 						<table class="table align-middle mb-0 bg-white text-center  table-bordered table-hover table-striped" id="example1">
@@ -79,6 +72,14 @@
 <script defer>
 	function show(p) {
 		var search = document.getElementById("search").value;
+		var sodong = document.getElementById("sodong").value;
+		var trangthaihd = document.getElementById("trangthaihd").value;
+		var loaitk= document.getElementById("loaitk").value;
+		if(sodong <1){
+            alert("Số dòng không hợp lệ");
+            document.getElementById("sodong").value=5;
+            return;
+        }
 		var xmlhttp = new XMLHttpRequest();
 		xmlhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
@@ -87,7 +88,7 @@
 				document.getElementById("trang").innerHTML = inra[1];
 			}
 		}
-		xmlhttp.open("GET", "../Model/taikhoan-tk-pt.php?p=" + p + "&search=" + search, true);
+		xmlhttp.open("GET", "../Controllers/controller_taikhoan/controller_taikhoan-tk-pt.php?p=" + p + "&search=" + search+ "&trangthaihd=" + trangthaihd+ "&sodong=" + sodong + "&loaitk=" + loaitk, true);
 		xmlhttp.send();
 	}
 	window.onload = show(1);
@@ -98,7 +99,7 @@
 			if (this.readyState == 4 && this.status == 200) {}
 		}
 
-		xmlhttp.open("GET", "../Model/doitt.php?id_user=" + id_user, true);
+		xmlhttp.open("GET", "../Controllers/controller_account/controller_doitt.php?id_user=" + id_user, true);
 		xmlhttp.send();
 		location.reload();
 	}
@@ -110,7 +111,7 @@
 			xmlhttp.onreadystatechange = function() {
 				if (this.readyState == 4 && this.status == 200) {}
 			}
-			xmlhttp.open("GET", "../Model/doichucvu.php?id_tk=" + id_tk + "&nhomquyen=" + nhomquyen, true);
+			xmlhttp.open("GET", "../Controllers/controller_account/controller_doichucvu.php?id_tk=" + id_tk + "&nhomquyen=" + nhomquyen, true);
 			xmlhttp.send();
 			location.reload();
 		} else {

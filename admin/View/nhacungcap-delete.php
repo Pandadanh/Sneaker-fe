@@ -1,22 +1,25 @@
+
+
 <?php
 include("../Control/inc/config.php");
-// Preventing the direct access of this page.
-if (!isset($_REQUEST['id'])) {
-	header('location: logout.php');
+	// Preventing the direct access of this page.
+if(!isset($_REQUEST['id'])) {
+	header('location: ../View/logout.php');
 	exit;
 } else {
-	// Check the id is valid or not
-	$statement = $pdo->prepare("SELECT * FROM tbl_nhacungcap WHERE id_ncc=?");
-	$statement->execute(array($_REQUEST['id']));
-	$total = $statement->rowCount();
-	if ($total == 0) {
-		header('location: logout.php');
-		exit;
-	}
+	
+	$data = array(
+		'id' => $_REQUEST['id']
+	);
+
+	$apiUrl = 'http://localhost:8080/api-admin/controller-nhacungcap/delete';
+	$ch = curl_init($apiUrl);
+	curl_setopt($ch, CURLOPT_POST, 1);
+	curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+	curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+	$response = curl_exec($ch);
+	curl_close($ch);
+
+	header('location: ../Control/index.php?page=nhacungcap&tc');
 }
-?>
-<?php
-$statement = $pdo->prepare("update tbl_nhacungcap set daxoa=1 WHERE id_ncc=?");
-$statement->execute(array($_REQUEST['id']));
-header('location: ../Control/index.php?page=nhacungcap&tc');
 ?>

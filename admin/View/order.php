@@ -1,26 +1,59 @@
 <?php
 if (isset($_POST['xacnhan'])) {
+
     $id_xuly = $_POST['id_xuly'];
-    $db = new Helper();
-    $stmt = "update tbl_phieuxuat set trangthai = 1, id_nv=? where id_px =?";
-    $para = [$_SESSION['user']['id_user'], $id_xuly];
-    $db->execute($stmt, $para);
+
+    $data = array(
+        'id_nv' => $_SESSION['user']['idUser'],
+        'id_px' =>  $id_xuly
+	);
+
+	$apiUrl = 'http://localhost:8080/api-admin/controller-don-hang/xacnhan';
+	$ch = curl_init($apiUrl);
+	curl_setopt($ch, CURLOPT_POST, 1);
+	curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+	curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+	$response = curl_exec($ch);
+	curl_close($ch);
+	
+    
     echo "<script type='text/javascript'>alert('Xác nhận thành công');</script>";
 }
 if (isset($_POST['huydon'])) {
+
     $id_xuly = $_POST['id_xuly'];
-    $db = new Helper();
-    $stmt = "update tbl_phieuxuat set trangthai = 2, id_nv=? where id_px =?";
-    $para = [$_SESSION['user']['id_user'], $id_xuly];
-    $db->execute($stmt, $para);
+
+    $data = array(
+        'id_nv' => $_SESSION['user']['idUser'],
+        'id_px' =>  $id_xuly
+	);
+
+	$apiUrl = 'http://localhost:8080/api-admin/controller-don-hang/huyxacnhan';
+	$ch = curl_init($apiUrl);
+	curl_setopt($ch, CURLOPT_POST, 1);
+	curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+	curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+	$response = curl_exec($ch);
+	curl_close($ch);
     echo "<script type='text/javascript'>alert('Đã hủy đơn');</script>";
 }
+
 ?>
 <section class="content-header">
     <div class="content-header-left">
         <h1>Các đơn hàng</h1>
     </div>
 </section>
+
+<?php
+
+if (ktne11("dh-xacnhan", $quyen) == false) {
+	$css = "#dh-xacnhan{ display: none}";
+	echo "<style>$css</style>";
+}
+   
+?>
+
 <section class="content">
     <div class="row">
         <div class="box box-info">
@@ -101,7 +134,7 @@ if (isset($_POST['huydon'])) {
                 document.getElementById("trang").innerHTML = inra[1];
             }
         }
-        xmlhttp.open("GET", "../Model/order-pt-tk.php?p=" + p + "&ngaymin=" + ngaymin + "&ngaymax=" + ngaymax + "&tinhtrang=" + tinhtrang + "&sodong=" + sodong, true);
+        xmlhttp.open("GET", "../Controllers/controller_donhang/controller_order-pt-tk.php?p=" + p + "&ngaymin=" + ngaymin + "&ngaymax=" + ngaymax + "&tinhtrang=" + tinhtrang + "&sodong=" + sodong, true);
         xmlhttp.send();
     }
     window.onload = show(1);
@@ -143,7 +176,7 @@ if (isset($_POST['huydon'])) {
 
 			}
 		}
-		xmlhttp.open("GET", "../Model/chitietdh.php?id_lay=" + id_lay, true);
+		xmlhttp.open("GET", "../Controllers/controller_donhang/controller_chitietdh.php?id_lay=" + id_lay, true);
 		xmlhttp.send();
 	}
 </script>

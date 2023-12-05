@@ -1,5 +1,5 @@
 <?php
-include("../Database/Helper.php");
+
 if(isset($_POST['form1'])) {
 	$valid = 1;
 
@@ -7,48 +7,32 @@ if(isset($_POST['form1'])) {
         $valid = 0;
         $error_message .= "Tên Danh mục không được để trống<br>";
     } else {
-		$db = new Helper();
-    	$statement = "SELECT * FROM tbl_danhmuc WHERE id_dm=?";
-		$para=[$_REQUEST['id']];
-		$result = $db->fetchAll($statement,$para);
-		foreach($result as $row) {
-			$current_danhmuc = $row['danhmuc'];
+
+
+
+		$data = array(
+			'danhmucnew' => $_POST['danhmuc'],
+			'id' => $_REQUEST['id']
+		);
+	
+		$apiUrl = 'http://localhost:8080/api-admin/controller-danhmuc/edit';
+		$ch = curl_init($apiUrl);
+		curl_setopt($ch, CURLOPT_POST, 1);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+		$response = curl_exec($ch);
+		curl_close($ch);
+		$responseData = json_decode($response, true);
+	
+		if ($responseData === null) {
+	
+			$error_message .= "Error<br>";
+		} else {
+			$success_message = 'Thay đổi Danh mục thành công.';
 		}
-		$db = new Helper();
-		$statement ="SELECT * FROM tbl_danhmuc WHERE danhmuc=? ";
-		$para=[$_POST['danhmuc']];
-    	$total = $db->rowCount($statement,$para);					
-    	if($total) {
-    		$valid = 0;
-        	$error_message .= 'Tên Danh mục đã tồn tại<br>';
-    	}
+
     }
 
-    if($valid == 1) {    	
-		// updating into the database
-		$statement = $pdo->prepare("UPDATE tbl_danhmuc SET danhmuc=? WHERE id_dm=?");
-		$statement->execute(array($_POST['danhmuc'],$_REQUEST['id']));
-
-    	$success_message = 'Cập nhật Danh mục thành công.';
-    }
-}
-?>
-
-<?php
-if(!isset($_REQUEST['id'])) {
-	header('location: logout.php');
-	exit;
-} else {
-	// Check the id is valid or not
-	$statement = "SELECT * FROM tbl_danhmuc WHERE id_dm=?";
-	$db = new Helper();
-	$para=[$_REQUEST['id']];
-    $total = $db->rowCount($statement,$para);
-	$result = $db->fetchAll($statement,$para)	;
-	if( $total == 0 ) {
-		header('location: logout.php');
-		exit;
-	}
 }
 ?>
 
@@ -62,10 +46,28 @@ if(!isset($_REQUEST['id'])) {
 </section>
 
    
-<?php							
-foreach ($result as $row) {
-	$danhmuc = $row['danhmuc'];
+<?php			
+
+$apiUrl = 'http://localhost:8080/api-admin/controller-danhmuc/show-id';
+$data = array(
+	'id' => $_REQUEST['id']
+);
+$ch = curl_init($apiUrl);
+curl_setopt($ch, CURLOPT_POST, 1);
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data)); 
+curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+$response = curl_exec($ch);
+curl_close($ch);
+$responseData = json_decode($response, true);
+
+if ($responseData === null) {
+    die('Invalid JSON data');
 }
+
+// print_r( $responseData);
+	$danhmuc = $responseData['data']['danhMuc'];
+
 ?>
 
 <section class="content">

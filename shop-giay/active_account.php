@@ -1,8 +1,31 @@
 <?php
-$conn = mysqli_connect('localhost', 'root', '', 'sneakershop');
-$active_token = $_GET['active_token'];
-$sql =  "UPDATE `tbl_users` SET `is_active`='1', active_token = NULL where `active_token`='$active_token'";
-$result = mysqli_query($conn, $sql);
+
+// URL của API bạn muốn gọi
+$apiUrl = "http://localhost:8080/api/controller-user/active-token";
+
+// Dữ liệu bạn muốn gửi đến API (activeToken trong trường hợp này)
+$data = array('activeToken' => $_GET['active_token']);
+
+// Khởi tạo cURL
+$ch = curl_init($apiUrl);
+
+// Cấu hình cURL để gửi dữ liệu POST
+curl_setopt($ch, CURLOPT_POST, 1);
+curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
+
+// Thiết lập các tùy chọn khác nếu cần
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+// Thực hiện yêu cầu cURL và lưu kết quả vào biến $response
+$response = curl_exec($ch);
+
+// Kiểm tra lỗi cURL
+if (curl_errno($ch)) {
+    echo 'Lỗi cURL: ' . curl_error($ch);
+}
+$result = json_decode($response, true);
+// Đóng phiên cURL
+curl_close($ch);
 ?>
 
 <style>

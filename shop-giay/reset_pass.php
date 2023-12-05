@@ -121,7 +121,7 @@ $reset_token = $_GET['reset_token'];
             };
             // console.log(data);
             $.ajax({
-                url: "check-reset-pass-ajax.php", // Trang xử lý, mặc định trang hiện tại
+                url: "./controllers/check-reset-pass-ajax.php", // Trang xử lý, mặc định trang hiện tại
                 method: "POST", // POST hoặc GET, mặc định GET
                 data: data, // Dữ liệu truyền lên server
                 dataType: "json", // html, text, script hoặc json
@@ -159,7 +159,7 @@ $reset_token = $_GET['reset_token'];
             };
             // console.log(data);
             $.ajax({
-                url: "check-reset-pass-ajax.php", // Trang xử lý, mặc định trang hiện tại
+                url: "./controllers/check-reset-pass-ajax.php", // Trang xử lý, mặc định trang hiện tại
                 method: "POST", // POST hoặc GET, mặc định GET
                 data: data, // Dữ liệu truyền lên server
                 dataType: "json", // html, text, script hoặc json
@@ -199,7 +199,7 @@ $reset_token = $_GET['reset_token'];
             };
             // console.log(data);
             $.ajax({
-                url: "check-reset-pass-ajax.php", // Trang xử lý, mặc định trang hiện tại
+                url: "./controllers/check-reset-pass-ajax.php", // Trang xử lý, mặc định trang hiện tại
                 method: "POST", // POST hoặc GET, mặc định GET
                 data: data, // Dữ liệu truyền lên server
                 dataType: "json", // html, text, script hoặc json
