@@ -1,0 +1,59 @@
+version: '3'
+
+services:
+  # PHP Service
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sneaker-app
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+    ports:
+      - "8081:80"
+    networks:
+      - sneaker-network
+    depends_on:
+      - db
+
+  # MySQL Service
+  db:
+    image: mysql:8.0
+    container_name: sneaker-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: sneaker_db
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_PASSWORD: root
+      MYSQL_USER: sneaker_user
+    volumes:
+      - dbdata:/var/lib/mysql
+    ports:
+      - "3307:3306"
+    networks:
+      - sneaker-network
+
+  # phpMyAdmin Service
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: sneaker-phpmyadmin
+    restart: unless-stopped
+    ports:
+      - "8082:80"
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: root
+    networks:
+      - sneaker-network
+    depends_on:
+      - db
+
+networks:
+  sneaker-network:
+    driver: bridge
+
+volumes:
+  dbdata:
+    driver: local 
